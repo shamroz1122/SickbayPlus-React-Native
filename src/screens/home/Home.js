@@ -1,0 +1,66 @@
+import React, {useState,useEffect} from 'react'
+import { StyleSheet, View,Image,TouchableOpacity } from 'react-native';
+import { Card, CardItem,H1,H3 } from 'native-base';
+import myBookingImage from '../../../assets/My_booking.png'
+import newBooking from '../../../assets/New_booking.png'
+function Home(props){
+
+    const styles = StyleSheet.create({
+        container:{
+            flex:1
+        }
+
+    })
+
+    return (
+
+        <View style={styles.container}>
+
+                       <View style={{flex:1,backgroundColor:'#5FB8B6',alignItems:'center',justifyContent:'space-around'}}>
+                               <View >
+                                  <H1 style={{fontFamily:'Montserrat-Black',color:'#ffffff'}}>HOME</H1>
+                               </View>
+                               <View>
+                                
+                               </View> 
+                       </View>
+                       <View style={{flex:2,backgroundColor:'#ffffff',padding:20}}>
+                       <TouchableOpacity onPress={() => props.navigation.navigate('NewBooking')}>
+                           <Card style={{elevation:8,height:200,bottom:110,borderRadius: 15 }}>
+                            
+                                    <CardItem   style={{ borderRadius: 15,flexDirection:'column',flex:1,justifyContent:'space-around',alignItems:'center' }}>
+                            
+                                            <View> 
+                                                <Image  source={newBooking} style={{ height: 110,width: 80}}/> 
+                                            </View>
+                                            <H3 style={{color:'#000000',fontFamily:'Montserrat-Bold'}}>
+                                                New Booking 
+                                            </H3>
+
+                                    </CardItem>
+                             
+                            </Card>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => props.navigation.navigate('MyAppointments')}>
+                        <Card style={{elevation:8,height:200,bottom:90,borderRadius: 15 }}>
+                    
+                            <CardItem  style={{ borderRadius: 15,flexDirection:'column',flex:1,justifyContent:'space-around',alignItems:'center' }}>
+                        
+                                    <View> 
+                                        <Image  source={myBookingImage} style={{ height: 110,width: 110}}/> 
+                                    </View>
+                                    <H3 style={{color:'#000000',fontFamily:'Montserrat-Bold'}}>
+                                        My Bookings 
+                                    </H3>
+
+                            </CardItem>
+                    
+                        </Card>
+                        </TouchableOpacity>
+                       </View>
+              
+        </View>
+    )
+}
+
+export default Home
