@@ -63,8 +63,8 @@ export const getDoctors = Data => dispatch => {
         }else{
             data = []
         }
-        setTimeout(function(){  dispatch({type: 'GET_DOCTORS_SUCCESS',doctors:data}) }, 2000);
-      //  dispatch({type: 'GET_DOCTORS_SUCCESS',doctors:data})
+        setTimeout(function(){  dispatch({type: 'GET_DOCTORS_SUCCESS',doctors:data}) }, 400);
+      // dispatch({type: 'GET_DOCTORS_SUCCESS',doctors:data})
 
       
         // axios.get("/get_doctors", Data)

@@ -1,9 +1,12 @@
 const initState = {
     categoryError:null,
-    categories:[]
+    categories:[],
+    loading:true,
+    checkCategories:false
   }
   
   const categoriesReducer = (state = initState, action) => {
+    
     switch(action.type){
 
         case 'GET_CATEGORIES_ERROR':
@@ -16,13 +19,23 @@ const initState = {
         return {
             ...state,
             categoryError: null,
-            categories:action.categories
+            categories:action.categories,
+            loading:false,
+            checkCategories: action.categories.length>0? true:false
         }
-        case 'CLEAR_MESSAGES':
-          return {
+        case 'CLEAR_CATEGORY_MESSAGES':
+        return {
               ...state,
-              categoryError:null
-          }
+              categoryError:null,
+              checkCategories:false,
+              categories:[]
+        }
+        case 'LOADING':
+        return {
+              ...state,
+              loading:action.loading
+            
+        }
       
         default:
           return state

@@ -9,13 +9,15 @@ import Dialog from "react-native-dialog";
 function AskAQuestion(props){
 
     const [state,setState] = useState({
-                images:[
-              
-                ],
+                question:'',
+                images:[],
                 modal:false,
+                modal2:false,
                 gender:'male',
                 appType:'',
-                age:0
+                age:0,
+                message:'',
+                weight:''
     })
 
     useEffect(()=>{
@@ -32,6 +34,12 @@ function AskAQuestion(props){
             backgroundColor:'#5FB8B6',
             height:30,
             width:'30%'
+        },
+        button2:{
+            marginTop:20,
+            backgroundColor:'#5FB8B6',
+            height:50,
+            width:'100%'
         },
     })
 
@@ -88,7 +96,9 @@ function AskAQuestion(props){
     const closeModal = () => {
         setState({...state,modal:!state.modal})
     }
-
+    const closeModal2 = () => {
+        setState({...state,modal2:!state.modal2})
+    }
     const removeImage = (key) => {
 
         var newImages = state.images.filter(image=>{
@@ -103,9 +113,53 @@ function AskAQuestion(props){
 
     }
 
+    const onChangeQuestion = (text) => {
+        setState({...state,question:text})
+    }
+    
+    const onChangeWeight = (text) => {
+        setState({...state,weight:text})
+    }
+    const nextPage = () => {
+
+        if(state.question=='')
+        {
+         
+            setState({...state,message:'Please ask a question or write down any query about your disease.',modal2:true})
+
+        }else if (state.weight==''){
+
+            setState({...state,modal2:true,message:'Please enter your estimated weight.'})
+
+        }else if (state.age==0){
+
+            setState({...state,modal2:true,message:'Please select your age range.'})
+        }else if (state.appType==''){
+
+            setState({...state,modal2:true,message:'Please select appointment type.'})
+
+        }
+        else{
+
+            const appointmentDetails = {
+                                        question:state.question,
+                                        appointemntType:state.appType,
+                                        gender:state.gender,
+                                        weight:state.weight,
+                                        age:state.age
+                                       }
+            props.navigation.navigate('SelectAppointmentDate',{doctor:props.navigation.getParam('doctor'),appointemntType:state.appType,appointmentDetails:appointmentDetails})
+        
+        }
+        
+    }
+
+
+
     return (
 
         <View style={styles.container}>
+
                 <Dialog.Container headerStyle={{margin:0}} contentStyle={{padding:0}} footerStyle={{height:130}}   visible={state.modal}>
                  
                     <View style={{height:130,flexDirection:'column',justifyContent:'space-around',alignItems:'center',backgroundColor:'#5FB8B6'}}>
@@ -114,14 +168,31 @@ function AskAQuestion(props){
                     </View>
                     <View style={{height:130,flexDirection:'column',justifyContent:'center',alignItems:'center',backgroundColor:'#ffffff'}}>
                         <View style={{width:'70%'}}>
-                            <Button onPress={closeModal} rounded block style={styles.button} >
+                            <Button onPress={closeModal} rounded block style={styles.button2} >
                                 <Text style={{fontSize:20,fontFamily:'Montserrat-Black',color:'#ffffff'}}>OK</Text>
                             </Button>
                         </View>
                         
                     </View>
                  
-              </Dialog.Container>
+                 </Dialog.Container>
+
+                 <Dialog.Container headerStyle={{margin:0}} contentStyle={{padding:0}} footerStyle={{height:130}}   visible={state.modal2}>
+                 
+                    <View style={{height:130,flexDirection:'column',justifyContent:'space-around',alignItems:'center',backgroundColor:'#5FB8B6'}}>
+                        <Icon style={{fontSize:60,color:'#ffffff'}} type="Ionicons" name="close-circle"/>
+                        <Text style={{fontFamily:'Montserrat-Black',color:'#ffffff',padding:10}}>{state.message}</Text>
+                    </View>
+                    <View style={{height:130,flexDirection:'column',justifyContent:'center',alignItems:'center',backgroundColor:'#ffffff'}}>
+                        <View style={{width:'70%'}}>
+                            <Button onPress={closeModal2} rounded block style={styles.button2} >
+                                <Text style={{fontSize:20,fontFamily:'Montserrat-Black',color:'#ffffff'}}>OK</Text>
+                            </Button>
+                        </View>
+                        
+                    </View>
+                
+                 </Dialog.Container>
 
                 <Content contentContainerStyle={{flexGrow:1}}>
                        <View style={{flex:1,backgroundColor:'#5FB8B6',height:180}}>
@@ -190,7 +261,7 @@ function AskAQuestion(props){
                                 
                                         <Text style={{fontFamily:'Montserrat-Bold',color:'#000000',fontSize:12}}>Your Question:</Text>
                                      
-                                       <Textarea style={{borderRadius:10,borderColor:'#5FB8B6',borderWidth:2}} rowSpan={3} />
+                                       <Textarea style={{borderRadius:10,borderColor:'#5FB8B6',borderWidth:2}} rowSpan={3} onChangeText={onChangeQuestion} />
                                       
                                         <View style={{flexDirection:'row',alignItems:'center'}}> 
                                            <Icon style={{color:'#5FB8B6',fontSize:16}} type="Ionicons" name="link"/>
@@ -249,7 +320,7 @@ function AskAQuestion(props){
                                                 <View style={{width:'50%',flexDirection:'row',alignItems:'center'}}>
                                                   <Text style={{fontFamily:'Montserrat-Bold',color:'#000000',fontSize:12}}>Weight: </Text>
                                                    <Item style={{borderColor:'#5FB8B6',width:'70%',height:25}} >
-                                                       <Input style={{fontSize:10,fontFamily:'Montserrat-Bold'}}  />
+                                                       <Input onChangeText={onChangeWeight} style={{fontSize:10,fontFamily:'Montserrat-Bold'}}  />
                                                    </Item>
                                                 </View>
                                             
@@ -298,8 +369,9 @@ function AskAQuestion(props){
                                            
                                           </View>
 
+
                                       <View style={{flexDirection:'row',alignItems:'center',justifyContent:'center'}}> 
-                                          <Button  rounded block style={styles.button} >
+                                          <Button onPress={nextPage}  rounded block style={styles.button} >
                                              <Text style={{color:'#ffffff',fontSize:14,fontFamily:'Montserrat-Black'}}>Next</Text>
                                            </Button>
                                        </View> 
