@@ -32,6 +32,26 @@ function Settings(props){
                   <SimpleAnimation  style={{width:'100%'}} distance={200} delay={400} duration={700} animate={true} direction="up" movementType="spring">
                
                        <View style={{flex:1,paddingBottom:0,padding:20}}>
+
+                            <TouchableOpacity onPress={()=> props.navigation.navigate('MyProfile')}>
+                        
+                                <Card  style={{elevation:6,height:70,borderRadius:8,marginBottom:15 }}>
+                                            
+                                    <CardItem  style={{ borderRadius: 8,flexDirection:'row',flex:1,justifyContent:'space-between',alignItems:'center' }}>
+                                    
+                                            <Text style={{color:'#000000',fontFamily:'Montserrat-Bold',fontSize:16}}>
+                                            My Profile
+                                            </Text>
+
+                                            <Icon style={{fontSize:30}} type="Ionicons" name="arrow-round-forward"/>
+                                    
+
+                                    </CardItem>
+                            
+                                </Card>
+                            
+                            </TouchableOpacity>
+
                           <TouchableOpacity onPress={()=> props.navigation.navigate('EditInfo')}>
                         
                                 <Card  style={{elevation:6,height:70,borderRadius:8,marginBottom:15 }}>
@@ -69,6 +89,26 @@ function Settings(props){
                                 </Card>
                             
                             </TouchableOpacity>
+
+                            <TouchableOpacity onPress={()=> props.navigation.navigate('Help')}>
+                    
+                                <Card  style={{elevation:6,height:70,borderRadius:8,marginBottom:15 }}>
+                                            
+                                    <CardItem  style={{ borderRadius: 8,flexDirection:'row',flex:1,justifyContent:'space-between',alignItems:'center' }}>
+                                    
+                                            <Text style={{color:'#000000',fontFamily:'Montserrat-Bold',fontSize:16}}>
+                                              Help
+                                            </Text>
+
+                                            <Icon style={{fontSize:30}} type="Ionicons" name="arrow-round-forward"/>
+                                    
+
+                                    </CardItem>
+                            
+                                </Card>
+                            
+                            </TouchableOpacity>
+
                             <TouchableOpacity onPress={logout}>
                     
                                 <Card  style={{elevation:6,height:70,borderRadius:8,marginBottom:15 }}>

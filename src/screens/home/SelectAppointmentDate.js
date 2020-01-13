@@ -95,7 +95,7 @@ function SelectAppointmentDate(props){
                        <Calendar 
                        current={Date()}
                        minDate={Date()}
-                       onDayPress={(day) =>props.navigation.navigate('SelectTimeSlot',{date:day,appointmentType:props.navigation.getParam('appointemntType'),doctor:props.navigation.getParam('doctor')}) }
+                       onDayPress={(day) =>props.navigation.navigate('SelectTimeSlot',{date:day,appointmentDetails:props.navigation.getParam('appointmentDetails'), appointmentType:props.navigation.getParam('appointemntType'),doctor:props.navigation.getParam('doctor')}) }
                        theme={{
                         backgroundColor: '#ffffff',
                         calendarBackground: '#ffffff',

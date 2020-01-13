@@ -1,9 +1,10 @@
 import React, {useState,useEffect} from 'react'
-import { StyleSheet, Text, View,Image,KeyboardAvoidingView,Platform,TouchableOpacity} from 'react-native';
+import { StyleSheet, Text, View,Image,KeyboardAvoidingView,Platform,TouchableOpacity,ImageBackground} from 'react-native';
 import { Card, CardItem,Icon,Input,Item,Button,Content,Radio,Picker,H3 } from 'native-base';
 import profileImage from '../../../assets/dummy.png'
 import { SimpleAnimation } from 'react-native-simple-animations';
 import ImagePicker from 'react-native-image-picker';
+import watermark from '../../../assets/watermark.png'
 
 function EditInfo(props){
 
@@ -152,8 +153,8 @@ function EditInfo(props){
 
         <View style={styles.container}>
       
-           <View style={{flex:1,backgroundColor:'#5FB8B6',height:180}}>
-                         
+           {/* <View style={{flex:1,backgroundColor:'#5FB8B6',height:180}}> */}
+                   <ImageBackground style={{width: '100%',flex:1,backgroundColor:'#5FB8B6',height:180}} source={watermark} >
                          <View>
                              <TouchableOpacity onPress={()=>props.navigation.navigate('Settings')}>
                                      <View style={{flexDirection:'row',paddingLeft:15,paddingTop:15}}>
@@ -165,8 +166,8 @@ function EditInfo(props){
                          <View style={{flexDirection:'column',justifyContent:'flex-start',alignItems:'center',bottom:22}} >
                              <H3 style={{fontFamily:'Montserrat-Black',color:'#ffffff'}}>EDIT INFO</H3>
                          </View> 
-                         
-            </View>
+                    </ImageBackground>
+            {/* </View> */}
 
             <View style={{flex:2,backgroundColor:'#ffffff',padding:20}}>
             <Card style={{elevation:10,height:500,bottom:130,borderRadius: 25 }}>

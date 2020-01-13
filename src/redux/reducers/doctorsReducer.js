@@ -2,7 +2,7 @@ const initState = {
     doctorError:null,
     doctors:[],
     loading:true,
-    checkDoctors:false
+    checkDoctors:3
   }
   
   const doctorsReducer = (state = initState, action) => {
@@ -21,13 +21,13 @@ const initState = {
             doctorError: null,
             doctors:action.doctors,
             loading:false,
-            checkDoctors: action.doctors.length>0? true:false
+            checkDoctors: action.doctors.length>0? 1:2
         }
         case 'CLEAR_DOCTORS_MESSAGES':
           return {
               ...state,
               doctorError:null,
-              checkDoctors:false,
+              checkDoctors:2,
               doctors:[]
           }
         case 'LOADING':

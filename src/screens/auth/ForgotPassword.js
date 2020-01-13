@@ -111,7 +111,7 @@ function ForgotPassword(props){
                 
                     <View style={{height:130,flexDirection:'column',justifyContent:'space-around',alignItems:'center',backgroundColor:'#5FB8B6'}}>
                         <Icon style={{fontSize:60,color:'#ffffff'}} type="Ionicons" name={state.icon}/>
-                        <Text style={{fontFamily:'Montserrat-Black',color:'#ffffff'}}> {state.message} </Text>
+                        <Text style={{fontFamily:'Montserrat-Bold',color:'#ffffff'}}> {state.message} </Text>
                     </View>
                     <View style={{height:130,flexDirection:'column',justifyContent:'center',alignItems:'center',backgroundColor:'#ffffff'}}>
                         <View style={{width:'70%'}}>

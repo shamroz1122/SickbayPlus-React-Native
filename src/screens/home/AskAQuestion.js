@@ -1,10 +1,11 @@
 import React, {useState,useEffect} from 'react'
-import { StyleSheet, View,TouchableOpacity,Text,KeyboardAvoidingView } from 'react-native';
+import { StyleSheet, View,TouchableOpacity,Text,KeyboardAvoidingView,ImageBackground } from 'react-native';
 import { Card, CardItem,H3,Icon,Thumbnail,Textarea,Content,Button,Item,Input,Radio,Picker } from 'native-base'
 import uuid from 'uuid/v1';
 import image from '../../../assets/doctorImage.png'
 import ImagePicker from 'react-native-image-picker';
 import Dialog from "react-native-dialog";
+import watermark from '../../../assets/watermark.png'
 
 function AskAQuestion(props){
 
@@ -68,9 +69,10 @@ function AskAQuestion(props){
            //   console.log('User tapped custom button: ', response.customButton);
             } else {
               const source = { uri: response.uri }
-            
+                
+             // console.log(res)
                 // You can also display the image using data:
-                // const source = { uri: 'data:image/jpeg;base64,' + response.data };
+               //  const source = { uri: 'data:image/jpeg;base64,' + response.data };
             
                     setState({
                         ...state,
@@ -143,7 +145,7 @@ function AskAQuestion(props){
 
             const appointmentDetails = {
                                         question:state.question,
-                                        appointemntType:state.appType,
+                                        appointmentType:state.appType,
                                         gender:state.gender,
                                         weight:state.weight,
                                         age:state.age
@@ -164,7 +166,7 @@ function AskAQuestion(props){
                  
                     <View style={{height:130,flexDirection:'column',justifyContent:'space-around',alignItems:'center',backgroundColor:'#5FB8B6'}}>
                         <Icon style={{fontSize:60,color:'#ffffff'}} type="Ionicons" name="close-circle"/>
-                        <Text style={{fontFamily:'Montserrat-Black',color:'#ffffff'}}>You can attach upto 5 images</Text>
+                        <Text style={{fontFamily:'Montserrat-Bold',color:'#ffffff'}}>You can attach upto 5 images</Text>
                     </View>
                     <View style={{height:130,flexDirection:'column',justifyContent:'center',alignItems:'center',backgroundColor:'#ffffff'}}>
                         <View style={{width:'70%'}}>
@@ -195,8 +197,8 @@ function AskAQuestion(props){
                  </Dialog.Container>
 
                 <Content contentContainerStyle={{flexGrow:1}}>
-                       <View style={{flex:1,backgroundColor:'#5FB8B6',height:180}}>
-                         
+                       {/* <View style={{flex:1,backgroundColor:'#5FB8B6',height:180}}> */}
+                       <ImageBackground style={{width: '100%',flex:1,backgroundColor:'#5FB8B6',height:180}} source={watermark} >
                             <View>
                                 <TouchableOpacity onPress={()=>props.navigation.navigate('Doctors')}>
                                         <View style={{flexDirection:'row',paddingLeft:15,paddingTop:15}}>
@@ -208,8 +210,8 @@ function AskAQuestion(props){
                             <View style={{flexDirection:'column',justifyContent:'flex-start',alignItems:'center',bottom:22}} >
                                 <H3 style={{fontFamily:'Montserrat-Black',color:'#ffffff'}}>ASK A QUESTION</H3>
                             </View> 
-                            
-                       </View>
+                            </ImageBackground>
+                       {/* </View> */}
                        <View style={{flex:1,backgroundColor:'#ffffff',paddingLeft:20,paddingRight:20,height:150}}>
                      
                            <Card style={{elevation:8,height:200,borderRadius: 15,bottom:110 }}>

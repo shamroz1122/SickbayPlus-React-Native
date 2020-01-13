@@ -78,10 +78,48 @@ export const getTimeSlots = Data => dispatch => {
 
 }
 
+// Reset Password by email
+export const bookingAppointment = Data => dispatch => {
+    
+    setBasePath() 
+      // console.log(Data)
+     
+       // setTimeout(function(){  dispatch({type: 'BOOK_APPOINTMENT_SUCCESS',bookAppointment:true,msg:null}) }, 2000);
+
+      dispatch({type: 'BOOK_APPOINTMENT_SUCCESS',bookAppointment:true,msg:null})
+
+
+
+    // axios.post("/book_appointment", Data)
+    // .then((res) => {
+    //   //console.log(res.data)
+    //        if(res.data.success == false)
+    //        {       
+    //                 dispatch({type: 'BOOK_APPOINTMENT_ERROR',bookAppointment:false,msg:res.data.msg})
+    //        }else{
+                   
+    //                 dispatch({type: 'BOOK_APPOINTMENT_SUCCESS',bookAppointment:true,msg:null})
+    //        } 
+
+    // })
+    // .catch((err) => {
+    //         console.log(err)
+    //         dispatch({type: 'BOOK_APPOINTMENT_ERROR',bookAppointment:true,msg:'Something Went Wrong.'})
+    // })
+
+
+}
+
 
 export const clearTimeSlots = Data => dispatch => {
     dispatch({type: 'CLEAR_TIMESLOTS'})
 }
+
+export const clearAppointmentMessages = Data => dispatch => {
+    dispatch({type: 'CLEAR_APPOINTMENT_MESSAGES'})
+}
+
+
 
 export const loadingFlag = Data => dispatch => {
     dispatch({type: 'LOADING',loading:true})

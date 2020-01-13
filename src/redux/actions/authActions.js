@@ -7,18 +7,21 @@ import AsyncStorage from '@react-native-community/async-storage';
 export const login = Data => dispatch => {
 
         setBasePath() 
-
-        axios.post("/auth/login", Data)
+        console.log(Data)
+        axios.post("/authenticate", Data)
         .then((res) => {
        //   console.log(res.data)
                if(res.data.success == false)
                {       
-                        dispatch({type: 'LOGIN_ERROR',msg:res.data.message[0]})
+                        dispatch({type: 'LOGIN_ERROR',msg:res.data.msg})
                }else{
                        
                         // Set token to localStorage
+                       
                         const token = res.data.token;
+                    
                         AsyncStorage.setItem("User", JSON.stringify(res.data.user));
+                       // AsyncStorage.setItem("User", JSON.stringify(user))
                         AsyncStorage.setItem("Token", token);
                         setAuthToken(token);
                 
@@ -34,22 +37,26 @@ export const login = Data => dispatch => {
   
 };   
 
-// SignUp User
-export const signUp = Data => dispatch => {
+
+// Login - get user token
+export const checkFacebookUser = Data => dispatch => {
 
         setBasePath() 
-        dispatch({type: 'SIGN_UP_ERROR',msg:'Error While Registration'})
-//         axios.post("/auth/register", Data)
+        dispatch({type: 'FB_NEW_USER',fbData:Data})
+//         axios.post("/fb-login", Data)
 //         .then((res) => {
 //        //   console.log(res.data)
 //                if(res.data.success == false)
 //                {       
-//                         dispatch({type: 'LOGIN_ERROR',msg:res.data.message[0]})
+//                         dispatch({type: 'FB_NEW_USER',fbData:Data})
 //                }else{
                        
 //                         // Set token to localStorage
+                       
 //                         const token = res.data.token;
+                    
 //                         AsyncStorage.setItem("User", JSON.stringify(res.data.user));
+//                        // AsyncStorage.setItem("User", JSON.stringify(user))
 //                         AsyncStorage.setItem("Token", token);
 //                         setAuthToken(token);
                 
@@ -59,11 +66,43 @@ export const signUp = Data => dispatch => {
 //         })
 //         .catch((err) => {
 //                 console.log(err)
-//                 dispatch({type: 'LOGIN_ERROR',msg:'Error While Registration.'})
+//                 dispatch({type: 'LOGIN_ERROR',msg:'Error While Signing In Through Facebook'})
 //         }
 //     );
   
-};   
+};  
+
+// SignUp User
+export const signUp = Data => dispatch => {
+
+     //   console.log(Data)
+        setBasePath() 
+  //      dispatch({type: 'SIGN_UP_ERROR',msg:'Rigestration API Is Not Ready Yet'})
+        axios.post("/register", Data)
+        .then((res) => {
+       //   console.log(res.data)
+               if(res.data.success == false)
+               {       
+                        dispatch({type: 'SIGN_UP_ERROR',msg:res.data.msg})
+               }else{
+                       
+                        // Set token to localStorage
+                        const token = res.data.token;
+                        AsyncStorage.setItem("User", JSON.stringify(res.data.user));
+                        AsyncStorage.setItem("Token", token);
+                        setAuthToken(token);
+                
+                        dispatch({type: 'LOGIN_SUCCESS',user:res.data.user})
+               } 
+
+        })
+        .catch((err) => {
+                console.log(err)
+                dispatch({type: 'SIGN_UP_ERROR',msg:'Error While Registration.'})
+        }
+    )
+  
+}
 
 
 

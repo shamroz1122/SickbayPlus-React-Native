@@ -15,10 +15,12 @@ import SelectCategory from '../screens/home/SelectCategory';
 import Doctors from '../screens/home/Doctors';
 import NewBooking from '../screens/home/NewBooking';
 import Settings from '../screens/settings/Settings';
+import Reports from '../screens/report/Reports';
+import Notifications from '../screens/notifications/Notifications';
 import ChangePassword from '../screens/settings/ChangePassword'; 
 import EditInfo from '../screens/settings/EditInfo'; 
-import MyProfile from '../screens/profile/MyProfile';
-import Help from '../screens/help/Help';
+import MyProfile from '../screens/settings/MyProfile';
+import Help from '../screens/settings/Help';
 import MyAppointments from '../screens/myAppointments/MyAppointments';
 import AuthLoadingScreen  from '../screens/auth/AuthLoadingScreen';
 import { createBottomTabNavigator } from 'react-navigation-tabs';
@@ -180,38 +182,18 @@ let SlideFromRight = (index, position, width) => {
             header:null           
         }
     }},
-    EditInfo:{screen:EditInfo,
-        navigationOptions:({ navigation }) => {
-          return {
-            header:null           
-        }
-    }}
-    },
-    {
-        initialRouteName: 'Settings',
-        headerMode: 'screen',
-        transitionConfig: TransitionConfiguration,
-    })
-
-
-  //Profile Stack
-  const MyProfileStack = createStackNavigator({
     MyProfile:{screen:MyProfile,
         navigationOptions:({ navigation }) => {
           return {
             header:null           
       }
     }},
-    },
-    {
-        initialRouteName: 'MyProfile',
-        headerMode: 'screen',
-        transitionConfig: TransitionConfiguration,
-    })
-
-
-      //Help Stack
-  const HelpStack = createStackNavigator({
+    EditInfo:{screen:EditInfo,
+        navigationOptions:({ navigation }) => {
+          return {
+            header:null           
+        }
+    }},
     Help:{screen:Help,
         navigationOptions:({ navigation }) => {
           return {
@@ -225,9 +207,72 @@ let SlideFromRight = (index, position, width) => {
             }           
       }
     }},
+
     },
     {
-        initialRouteName: 'Help',
+        initialRouteName: 'Settings',
+        headerMode: 'screen',
+        transitionConfig: TransitionConfiguration,
+    })
+
+
+  //Profile Stack
+  const NotificationsStack = createStackNavigator({
+    Notifications:{screen:Notifications,
+        navigationOptions:({ navigation }) => {
+          return {
+            headerStyle:{
+                backgroundColor:'#5FB8B6',
+            },
+            headerTitle:'NOTIFICATIONS',
+            headerTintColor:'#ffffff',
+            headerTitleStyle:{
+              fontFamily:'Montserrat-Black',
+            },
+            headerRight:<TouchableOpacity onPress={navigation.getParam('showSearchBar')} ><View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
+                              <Icon style={{fontSize:30,color:'#ffffff'}} type="Ionicons" name="search"/>
+                        </View></TouchableOpacity>,
+            headerRightContainerStyle: {
+            paddingRight:15
+
+          }             
+      }
+    }},
+    },
+    {
+        initialRouteName: 'Notifications',
+        headerMode: 'screen',
+        transitionConfig: TransitionConfiguration,
+    })
+
+
+      //Help Stack
+  const ReportsStack = createStackNavigator({
+
+    Reports:{screen:Reports,
+        navigationOptions:({ navigation }) => {
+          return {
+            headerStyle:{
+                backgroundColor:'#5FB8B6',
+            },
+            headerTitle:'Medical Reports',
+            headerTintColor:'#ffffff',
+            headerTitleStyle:{
+              fontFamily:'Montserrat-Black',
+            },
+            headerRight:<TouchableOpacity onPress={navigation.getParam('showSearchBar')} ><View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
+                              <Icon style={{fontSize:30,color:'#ffffff'}} type="Ionicons" name="search"/>
+                         </View></TouchableOpacity>,
+            headerRightContainerStyle: {
+            paddingRight:15
+
+           }         
+      }
+    }},
+
+    },
+    {
+        initialRouteName: 'Reports',
         headerMode: 'screen',
         transitionConfig: TransitionConfiguration,
     })
@@ -299,9 +344,9 @@ let SlideFromRight = (index, position, width) => {
   const AppStack = createBottomTabNavigator({
     Home: HomeStack,
     MyAppointments:MyAppointmentsStack,
-    MyProfile:MyProfileStack,
+    Notifications:NotificationsStack,
     Settings: SettingsStack,
-    Help: HelpStack,
+    Reports: ReportsStack,
   },
   {
     defaultNavigationOptions: ({ navigation }) => ({
@@ -325,13 +370,13 @@ let SlideFromRight = (index, position, width) => {
           IconType = 'Ionicons'
           iconName = 'calendar';
         }
-        else if (routeName === 'MyProfile') {
+        else if (routeName === 'Notifications') {
           IconType = 'Ionicons'
-          iconName = 'person';
+          iconName = 'notifications';
         }
-        else if (routeName === 'Help') {
+        else if (routeName === 'Reports') {
           IconType = 'Ionicons'
-          iconName = 'help-circle';
+          iconName = 'clipboard';
         }
 
         // You can return any component that you like here!

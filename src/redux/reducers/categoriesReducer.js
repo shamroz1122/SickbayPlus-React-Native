@@ -2,7 +2,7 @@ const initState = {
     categoryError:null,
     categories:[],
     loading:true,
-    checkCategories:false
+    checkCategories:3
   }
   
   const categoriesReducer = (state = initState, action) => {
@@ -16,18 +16,18 @@ const initState = {
             categories:[]
         } 
         case 'GET_CATEGORIES_SUCCESS':
-        return {
+        return { 
             ...state,
             categoryError: null,
             categories:action.categories,
             loading:false,
-            checkCategories: action.categories.length>0? true:false
+            checkCategories: action.categories.length>0? 1:2
         }
         case 'CLEAR_CATEGORY_MESSAGES':
         return {
               ...state,
               categoryError:null,
-              checkCategories:false,
+              checkCategories:2,
               categories:[]
         }
         case 'LOADING':

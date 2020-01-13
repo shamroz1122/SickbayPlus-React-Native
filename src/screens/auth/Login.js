@@ -4,9 +4,14 @@ import { Card, CardItem,Icon,Input,Item,Button,Content,Spinner } from 'native-ba
 import logo from '../../../assets/logo.png'
 import { SimpleAnimation } from 'react-native-simple-animations';
 import { connect } from 'react-redux'
-import { login, clearMessage } from '../../redux/actions/authActions'
+import { login, clearMessage,checkFacebookUser } from '../../redux/actions/authActions'
 import Dialog from "react-native-dialog";
-
+import { LoginManager,AccessToken,GraphRequest,GraphRequestManager} from 'react-native-fbsdk';
+import {
+    GoogleSignin,
+    GoogleSigninButton,
+    statusCodes,
+  } from '@react-native-community/google-signin';
 
 function Login(props){
 
@@ -18,11 +23,17 @@ function Login(props){
 
     const [state,setState] = useState({
         isLoading:false,
-        modal:false
+        modal:false,
+        fbData:{},
+        googleData:{},
+        fbLogin:false,
+        message:''
     })
 
     useEffect( ()=>{
-       
+        //    signOutGoogle()
+            LoginManager.logOut()
+     
             if (props.isAuthenticated) {
                 setState({...state,isLoading:false})
                 props.navigation.navigate('App'); // push user to dashboard when they login
@@ -31,11 +42,25 @@ function Login(props){
             if(props.authError)
             {
 
-                setState({...state,isLoading:false,modal:true})
+                setState({...state,isLoading:false,modal:true,message:props.authError})
                 props.clearMessage()
             }
 
     },[props.authError,props.isAuthenticated,props.user,props.error]) 
+
+    useEffect( ()=>{
+     
+        if(props.fbNewUser)
+        {
+            setState({...state,fbLogin:false,fbData:{},isLoading:false})
+            props.clearMessage()
+            console.log('login success Full')
+           // props.navigation.navigate('App');
+        }
+
+    },[props.fbNewUser]) 
+
+
 
 
 
@@ -100,14 +125,143 @@ function Login(props){
     const onChangeUsername = (text) => {
         setCredentials({...credentials,email:text})
     }
-
+    
     const onChangePassword = (text) => {
         setCredentials({...credentials,password:text})
     }
-    const closeModal = () => {
-        setState({...state,modal:false})
+
+    const onChangeFbEmail = (text) => {
+        setState((state) => ({
+            ...state,
+            fbData: {
+                ...state.fbData,
+                email:text
+            }
+        }))
     }
 
+    const closeModal = () => {
+        
+        setState({...state,modal:false})
+    }
+    const validateEmail = (email) =>{
+        var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(String(email).toLowerCase());
+    }
+
+
+    const FBLogin = () => {
+
+        if(state.fbData.email=='' || !validateEmail(state.fbData.email))
+        {
+            setState({...state,message:'Please Enter a Valid Email Address',modal:true})
+        }else{
+         
+            setState({...state,isLoading:true})
+           // console.log(state.fbData)
+            props.checkFacebookUser(state.fbData)
+        
+        }
+      
+    }
+
+      //Create response callback.
+    const responseInfoCallback = (error, result) => {
+            if (error) {
+              alert('Error fetching data: ' + error.toString());
+            } else {
+
+                if(result.email==undefined)
+                {
+                    result.email = ''
+                    setState({...state,fbData:result,fbLogin:true})
+               
+                }else{
+             
+                    setState({...state,isLoading:true})
+                    props.checkFacebookUser(result)
+                }
+           
+       
+            }
+    }
+
+    const FbLogin = () => {
+        LoginManager.logInWithPermissions(['public_profile','email']).then(
+            function(result) {
+              if (result.isCancelled) {
+              //  alert('Login was cancelled');
+              } else {
+           
+                  AccessToken.getCurrentAccessToken().then(
+                    (data) => {
+                      const infoRequest = new GraphRequest(
+                        '/me?fields=name,picture,email ',
+                        null,
+                        responseInfoCallback
+                      );
+                      // Start the graph request.
+                      new GraphRequestManager().addRequest(infoRequest).start();
+                    }
+                  )
+
+
+              }
+            },
+            function(error) {
+              alert('Login failed with error: ' + error);
+            }
+          );
+    }
+
+
+   const signOutGoogle = async () => {
+        try {
+          await GoogleSignin.revokeAccess();
+          await GoogleSignin.signOut();
+            setState({...state, googleData:{} }); // Remember to remove the user from your app's state as well
+        } catch (error) {
+          console.error(error);
+        }
+    }
+
+    const signInGoogle = async () => {
+        try {
+          await GoogleSignin.hasPlayServices();
+          const userInfo = await GoogleSignin.signIn();
+          console.log('hhh')
+          setState({...state, googleData:userInfo });
+          console.log(userInfo)
+        } catch (error) {
+          if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+            console.log('cancelled')
+            // user cancelled the login flow
+          } else if (error.code === statusCodes.IN_PROGRESS) {
+            console.log('progress')
+            // operation (e.g. sign in) is in progress already
+          } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+            console.log('play not available')
+            // play services not available or outdated
+          } else {
+              console.log(error)
+            // some other error happened
+          }
+        }
+      };
+
+    const GoogleLogin = () => {
+        GoogleSignin.configure({
+            scopes: [], // what API you want to access on behalf of the user, default is email and profile
+            webClientId: '274302893670-e2v162f3jgthritqrm3banpaboqhpmss.apps.googleusercontent.com', // client ID of type WEB for your server (needed to verify user ID and offline access)
+            offlineAccess: true, // if you want to access Google API on behalf of the user FROM YOUR SERVER
+            hostedDomain: '', // specifies a hosted domain restriction
+            loginHint: '', // [iOS] The user's ID, or email address, to be prefilled in the authentication UI if possible. [See docs here](https://developers.google.com/identity/sign-in/ios/api/interface_g_i_d_sign_in.html#a0a68c7504c31ab0b728432565f6e33fd)
+          //  forceConsentPrompt: true, // [Android] if you want to show the authorization prompt at each login.
+            accountName: '', // [Android] specifies an account name on the device that should be used
+          
+          })
+        signInGoogle()
+    }
 
     return (
 
@@ -116,8 +270,8 @@ function Login(props){
                  <Dialog.Container headerStyle={{margin:0}} contentStyle={{padding:0}} footerStyle={{height:130}}   visible={state.modal}>
                  
                     <View style={{height:130,flexDirection:'column',justifyContent:'space-around',alignItems:'center',backgroundColor:'#5FB8B6'}}>
-                        <Icon style={{fontSize:60,color:'#ffffff'}} type="Ionicons" name="close-circle"/>
-                        <Text style={{fontFamily:'Montserrat-Black',color:'#ffffff'}}>Invalid Email Or Password</Text>
+                         <Icon style={{fontSize:60,color:'#ffffff'}} type="Ionicons" name="close-circle"/>
+                         <Text style={{fontFamily:'Montserrat-Bold',color:'#ffffff'}}> {state.message} </Text>
                     </View>
                     <View style={{height:130,flexDirection:'column',justifyContent:'center',alignItems:'center',backgroundColor:'#ffffff'}}>
                         <View style={{width:'70%'}}>
@@ -138,7 +292,7 @@ function Login(props){
         <Content>
         <CardItem style={{ borderRadius: 25 }}>
     
-        <KeyboardAvoidingView  keyboardVerticalOffset={Platform.select({ios: 0, android: 0})}  behavior={Platform.select({ android: 'padding', ios: 'padding' })} style={{flex:1,justifyContent:'center',alignItems:'center'}}>
+         <KeyboardAvoidingView  keyboardVerticalOffset={Platform.select({ios: 0, android: 0})}  behavior={Platform.select({ android: 'padding', ios: 'padding' })} style={{flex:1,justifyContent:'center',alignItems:'center'}}>
             {/* <View style={{flex:1,justifyContent:'center',alignItems:'center'}}> */}
                 
             <SimpleAnimation  style={{width:'100%'}} distance={200} delay={100} duration={700} animate={true} direction="up" movementType="spring">
@@ -147,55 +301,69 @@ function Login(props){
                     <Image  source={logo} style={{ height: 120,width: 120,alignSelf:'center'}}/> 
                 </View>
 
-                <View> 
+               {state.fbLogin? <View> 
+                                        <Item rounded style={styles.email}>
+                                        <Icon style={{color:"#000000"}} type="MaterialIcons" name="mail"/>
+                                        <Input style={styles.input} onChangeText={onChangeFbEmail}  value={state.fbData.email}   placeholderTextColor="#000000" placeholder='Email'/> 
+                                        </Item>
 
-                        <Item rounded style={styles.email}>
-                        <Icon style={{color:"#000000"}} type="MaterialIcons" name="mail"/>
-                        <Input style={styles.input} onChangeText={onChangeUsername}  value={credentials.username}   name="username" placeholderTextColor="#000000" placeholder='Email'/> 
-                        </Item>
-                
-                        <Item rounded style={styles.password}>
-                        <Icon style={{color:"#000000"}} type="FontAwesome" name="key"/>
-                        <Input style={styles.input} onChangeText={onChangePassword} value={credentials.password}   name="password" secureTextEntry={true} placeholderTextColor="#000000" placeholder='Password'/>
-                        </Item>
+                                        {state.isLoading?<Spinner color='#5FB8B6' />:<Button onPress={FBLogin} rounded block style={styles.button} >
+                                        <Text style={{color:'#ffffff',fontSize:20,fontFamily:'Montserrat-Black'}}>Proceed</Text>
+                                        </Button>}
 
-                    
-                        <Text onPress={() => props.navigation.navigate('ForgotPassword')} style={{marginTop:20,textAlign:'right',color:'#000000',fontSize:14,fontFamily:'Montserrat-Bold'}}>Forgot Password?</Text>
-                    
+             
+                                         <Text style={{marginTop:20,textAlign:'center',color:'#000000',fontSize:12,fontFamily:'Montserrat-Bold'}}>We Didn't get your email from Facebook  </Text>
 
-                        {state.isLoading?<Spinner color='#5FB8B6' />:<Button onPress={SignIn} rounded block style={styles.button} >
-                        <Text style={{color:'#ffffff',fontSize:20,fontFamily:'Montserrat-Black'}}>Sign In</Text>
-                        </Button>}
+                                  </View> 
+                                  :<View> 
 
-                        <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginTop:20,}}>
-                        <View style={{borderBottomColor: 'black',borderBottomWidth: 1,width:'30%'}}/>
-                        <Text style={{textAlign:'center',color:'#000000',fontSize:12,fontFamily:'Montserrat-Bold'}} > Or Login With </Text>
-                        <View style={{borderBottomColor: 'black',borderBottomWidth: 1,width:'30%'}}/>
-                        </View>
+                                            <Item rounded style={styles.email}>
+                                              <Icon style={{color:"#000000"}} type="MaterialIcons" name="mail"/>
+                                              <Input style={styles.input} onChangeText={onChangeUsername}  value={credentials.username}   name="username" placeholderTextColor="#000000" placeholder='Email'/> 
+                                            </Item>
 
-                    
+                                            <Item rounded style={styles.password}>
+                                              <Icon style={{color:"#000000"}} type="FontAwesome" name="key"/>
+                                              <Input style={styles.input} onChangeText={onChangePassword} value={credentials.password}   name="password" secureTextEntry={true} placeholderTextColor="#000000" placeholder='Password'/>
+                                            </Item>
 
-                    <View style={{flexDirection:'row', justifyContent:'space-between'}}>
-                            <View style={{width:'48%'}}>
-                                <Button rounded block iconRight style={styles.FBbutton}>
-                            
-                                        <Icon style={{color:"#355DA1",justifyContent:'center'}} type="FontAwesome" name="facebook-f"/>
-                                        <Text style={{color:'#000000',fontSize:12,fontFamily:'Montserrat-Bold'}}>FACEBOOK</Text>
-                                
-                                </Button>
-                            </View>
 
-                            <View style={{width:'48%'}}>
-                                    <Button rounded block iconRight  style={styles.GMbutton} >
-                                    <Icon style={{color:"#CE3630"}} type="Ionicons" name="logo-googleplus"/>
-                                    <Text style={{color:'#000000',fontSize:12,fontFamily:'Montserrat-Bold'}}>GOOGLE</Text>
-                                </Button>
-                            </View>
-                    </View>
+                                            <Text onPress={() => props.navigation.navigate('ForgotPassword')} style={{marginTop:20,textAlign:'right',color:'#000000',fontSize:14,fontFamily:'Montserrat-Bold'}}>Forgot Password?</Text>
 
-                            <Text style={{marginTop:20,textAlign:'center',color:'#000000',fontSize:12,fontFamily:'Montserrat-Bold'}} onPress={() => props.navigation.navigate('Signup')} >If you don't have any account? <Text style={{color:'#5FB8B6'}}>Sign Up</Text> </Text>
-                
-                </View>
+
+                                            {state.isLoading?<Spinner color='#5FB8B6' />:<Button onPress={SignIn} rounded block style={styles.button} >
+                                            <Text style={{color:'#ffffff',fontSize:20,fontFamily:'Montserrat-Black'}}>Sign In</Text>
+                                            </Button>}
+
+                                            <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginTop:20,}}>
+                                               <View style={{borderBottomColor: 'black',borderBottomWidth: 1,width:'30%'}}/>
+                                               <Text style={{textAlign:'center',color:'#000000',fontSize:12,fontFamily:'Montserrat-Bold'}} > Or Login With </Text>
+                                               <View style={{borderBottomColor: 'black',borderBottomWidth: 1,width:'30%'}}/>
+                                            </View>
+
+
+
+                                            <View style={{flexDirection:'row', justifyContent:'space-between'}}>
+                                                <View style={{width:'48%'}}>
+                                                    <Button rounded block onPress={FbLogin} iconRight style={styles.FBbutton}>
+                                                
+                                                            <Icon style={{color:"#355DA1",justifyContent:'center'}} type="FontAwesome" name="facebook-f"/>
+                                                            <Text style={{color:'#000000',fontSize:12,fontFamily:'Montserrat-Bold'}}>FACEBOOK</Text>
+                                                    
+                                                    </Button>
+                                                </View>
+
+                                                <View style={{width:'48%'}}>
+                                                    <Button rounded block iconRight onPress={GoogleLogin}  style={styles.GMbutton} >
+                                                        <Icon style={{color:"#CE3630"}} type="Ionicons" name="logo-googleplus"/>
+                                                        <Text style={{color:'#000000',fontSize:12,fontFamily:'Montserrat-Bold'}}>GOOGLE</Text>
+                                                    </Button>
+                                                </View>
+                                            </View>
+
+                                             <Text style={{marginTop:20,textAlign:'center',color:'#000000',fontSize:12,fontFamily:'Montserrat-Bold'}} onPress={() => props.navigation.navigate('Signup')} >If you don't have any account? <Text style={{color:'#5FB8B6'}}>Sign Up</Text> </Text>
+
+                                 </View>}
 
                         </SimpleAnimation>
                         {/* </View> */}
@@ -215,7 +383,8 @@ const mapStateToProps = (state) => {
         authError: state.auth.authError,
         isAuthenticated: state.auth.isAuthenticated,
         user: state.auth.user,
-        error:state.auth.error
+        error:state.auth.error,
+        fbNewUser:state.auth.fbNewUser
     }
 }
 
@@ -223,8 +392,10 @@ const mapDispatchToProps = (dispatch) => {
 
     return {
         login: (creds) => dispatch(login(creds)),
-        clearMessage:()=>dispatch(clearMessage())
+        clearMessage:()=>dispatch(clearMessage()),
+        checkFacebookUser:(data)=>dispatch(checkFacebookUser(data))
     }
+
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Login)

@@ -1,7 +1,8 @@
 import React from 'react'
-import { StyleSheet, View} from 'react-native';
+import { StyleSheet, View,TouchableOpacity,ImageBackground} from 'react-native';
 import { Card, CardItem,H1,H3,Thumbnail,Text,Icon } from 'native-base';
 import image from '../../../assets/doctorImage.png'
+import watermark from '../../../assets/watermark.png'
 
 function MyProfile(props){
 
@@ -14,15 +15,22 @@ function MyProfile(props){
     return (
 
         <View style={styles.container}>
-
-                       <View style={{flex:1,backgroundColor:'#5FB8B6',alignItems:'center',justifyContent:'space-around'}}>
-                               <View >
-                                  <H1 style={{fontFamily:'Montserrat-Black',color:'#ffffff'}}>MY PROFILE</H1>
-                               </View>
-                               <View>
-                                
-                               </View> 
-                       </View>
+{/* 
+                  <View style={{flex:1,backgroundColor:'#5FB8B6',height:180}}> */}
+                  <ImageBackground style={{width: '100%',flex:1,backgroundColor:'#5FB8B6',height:180}} source={watermark} >
+                         <View>
+                             <TouchableOpacity onPress={()=>props.navigation.navigate('Settings')}>
+                                     <View style={{flexDirection:'row',paddingLeft:15,paddingTop:15}}>
+                                         <Icon style={{color:'#ffffff',fontSize:25}} type="Ionicons" name="arrow-round-back"/>
+                                     </View> 
+                             </TouchableOpacity>
+                              </View>
+                           
+                              <View style={{flexDirection:'column',justifyContent:'flex-start',alignItems:'center',bottom:22}} >
+                                 <H3 style={{fontFamily:'Montserrat-Black',color:'#ffffff'}}>MY PROFILE</H3>
+                              </View> 
+                    </ImageBackground>
+                   {/* </View> */}
 
                        <View style={{flex:2,backgroundColor:'#ffffff',padding:20}}>
               

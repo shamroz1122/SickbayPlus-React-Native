@@ -123,7 +123,7 @@ function Doctors(props){
 
     useEffect(()=>{
  
-        if(props.doctors.length > 0 && props.checkDoctors==true)
+        if(props.doctors.length > 0 && props.checkDoctors==1)
         {
             setState(
                 (state) =>({ 
@@ -134,9 +134,9 @@ function Doctors(props){
                     isRefreshing:false
                 })
             )
-            props.clearDoctorsMessage()
+           // props.clearDoctorsMessage()
             
-        }else if(state.doctors.length == 0 && props.checkDoctors==false){
+        }else if(state.doctors.length == 0 && props.checkDoctors==3){
             
          
             props.navigation.setParams({ showSearchBar: showSearchBar })
@@ -144,6 +144,10 @@ function Doctors(props){
             const pageNumber = {page:state.page}
             props.getDoctors(pageNumber)
 
+        }else if(state.doctors.length == 0 && props.checkDoctors==2){
+            
+            setState({...state,loading:false})
+    
         }
 
     },[props.doctors,props.checkDoctors])
@@ -240,19 +244,27 @@ function Doctors(props){
              )
 
         }else{
-            return (
 
-                <TouchableOpacity onPress={() => handleLoadMore()} style={{flex:1,flexDirection:'row',justifyContent:'space-around',alignItems:'center',marginBottom:10,backgroundColor:'#5FB8B6',height:25,width:'30%',alignSelf:'center'}}>
-                    {/* <Button iconRight block style={styles.button2} > */}
-                        
-                            <Icon name='refresh' style={{fontSize:16,color:'#ffffff'}} type="Ionicons" />
-                            <Text style={{color:'#ffffff',fontSize:11,fontFamily:'Montserrat-Black'}}>Load More</Text>
-                
-                    {/* </Button> */}
-                </TouchableOpacity>
-               
-            
-            )
+            if(props.doctors.length > 0)
+            {
+                return (
+                    <TouchableOpacity onPress={() => handleLoadMore()} style={{flex:1,flexDirection:'row',justifyContent:'space-around',alignItems:'center',marginBottom:10,backgroundColor:'#5FB8B6',height:25,width:'30%',alignSelf:'center'}}>
+                        {/* <Button iconRight block style={styles.button2} > */}
+                            
+                                <Icon name='refresh' style={{fontSize:16,color:'#ffffff'}} type="Ionicons" />
+                                <Text style={{color:'#ffffff',fontSize:11,fontFamily:'Montserrat-Black'}}>Load More</Text>
+                    
+                        {/* </Button> */}
+                    </TouchableOpacity>
+                )
+            }else{
+                return (
+                    <View style={{flexDirection:'row',justifyContent:'center'}}>
+                        <Text style={{color:'#000000',fontFamily:'Montserrat-Black'}}>No Record Found!</Text>
+                    </View>
+                )
+            }
+
         }
         
     }

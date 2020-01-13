@@ -5,7 +5,9 @@ const initState = {
   isAuthenticated: false,
   error:false,
   resetPasswordError:null,
-  resetPasswordSuccess:null
+  resetPasswordSuccess:null,
+  fbData:{},
+  fbNewUser:false
 }
 
 const authReducer = (state = initState, action) => {
@@ -14,13 +16,15 @@ const authReducer = (state = initState, action) => {
     return {
       ...state,
       authError: action.msg,
-      error:!state.error
+      error:!state.error,
+      fbNewUser:false
     } 
     case 'SIGN_UP_ERROR':
     return {
       ...state,
       signUpError: action.msg,
-      error:!state.error
+      error:!state.error,
+      fbNewUser:false
     } 
     case 'LOGIN_SUCCESS':
     return {
@@ -28,15 +32,23 @@ const authReducer = (state = initState, action) => {
       authError:null,
       signUpError:null,
       user:action.user,
-      isAuthenticated: true
+      isAuthenticated: true,
+      fbNewUser:false
     }
-      case 'LOGOUT_USER':
-      return {
-        ...state,
-        authError:null,
-        user:{},
-        isAuthenticated: false
-      }
+    case 'FB_NEW_USER':
+    return {
+      ...state,
+      fbData:action.fbData,
+      fbNewUser:true
+    }
+    case 'LOGOUT_USER':
+    return {
+      ...state,
+      authError:null,
+      user:{},
+      isAuthenticated: false,
+      fbNewUser:false
+    }
       case 'CLEAR_MESSAGES':
       return {
           ...state,
@@ -45,7 +57,8 @@ const authReducer = (state = initState, action) => {
           resetPasswordError:null,
           resetPasswordSuccess:null,
           changePasswordError:null,
-          changePasswordSuccess:null
+          changePasswordSuccess:null,
+          fbNewUser:false
       }
       case 'RESET_PASSWORD_SUCCESS':
       return {
