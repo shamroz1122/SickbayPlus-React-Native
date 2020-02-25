@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "274302893670",
+    "firebase_url": "https://sickbayplus-1578398737028.firebaseio.com",
+    "project_id": "sickbayplus-1578398737028",
+    "storage_bucket": "sickbayplus-1578398737028.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:274302893670:android:87eacf2770cb5bf85db7a7",
+        "android_client_info": {
+          "package_name": "com.sickbayplus"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "274302893670-pg2pe1vu0j6cg83me5rppmfcg6qad79r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDOrYp6nbwlVH9s2_B_ogR_dGHxpiRFpjA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "274302893670-pg2pe1vu0j6cg83me5rppmfcg6qad79r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

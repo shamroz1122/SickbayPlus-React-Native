@@ -59,7 +59,7 @@ function Settings(props){
                                     <CardItem  style={{ borderRadius: 8,flexDirection:'row',flex:1,justifyContent:'space-between',alignItems:'center' }}>
                                     
                                             <Text style={{color:'#000000',fontFamily:'Montserrat-Bold',fontSize:16}}>
-                                                Edit Information
+                                               Update Information
                                             </Text>
 
                                             <Icon style={{fontSize:30}} type="Ionicons" name="arrow-round-forward"/>
@@ -71,7 +71,7 @@ function Settings(props){
                             
                             </TouchableOpacity>
 
-                            <TouchableOpacity onPress={()=> props.navigation.navigate('ChangePassword')}>
+                            {/* <TouchableOpacity onPress={()=> props.navigation.navigate('ChangePassword')}>
                     
                                 <Card  style={{elevation:6,height:70,borderRadius:8,marginBottom:15 }}>
                                             
@@ -88,7 +88,7 @@ function Settings(props){
                             
                                 </Card>
                             
-                            </TouchableOpacity>
+                            </TouchableOpacity> */}
 
                             <TouchableOpacity onPress={()=> props.navigation.navigate('Help')}>
                     

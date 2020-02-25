@@ -7,11 +7,27 @@ const initState = {
   resetPasswordError:null,
   resetPasswordSuccess:null,
   fbData:{},
-  fbNewUser:false
+  fbNewUser:false,
+  isUpdated:false,
+  updateError:null,
+  helpMsg:null,
+  helpSuccess:false
 }
 
 const authReducer = (state = initState, action) => {
   switch(action.type){
+   case 'HELP_SUCCESS':
+    return {
+      ...state,
+      helpMsg:action.msg,
+      helpSuccess:false
+    } 
+    case 'HELP_ERROR':
+    return {
+      ...state,
+      helpMsg:null,
+      helpSuccess:true
+    } 
     case 'LOGIN_ERROR':
     return {
       ...state,
@@ -26,6 +42,20 @@ const authReducer = (state = initState, action) => {
       error:!state.error,
       fbNewUser:false
     } 
+    case 'EDIT_INFO_ERROR':
+      return {
+        ...state,
+        updateError: action.msg,
+        isUpdated:false
+      
+    } 
+    case 'EDIT_INFO_SUCCESS':
+      return {
+        ...state,
+        updateError: null,
+        isUpdated:true,
+        user:action.user
+      }
     case 'LOGIN_SUCCESS':
     return {
       ...state,
@@ -58,7 +88,9 @@ const authReducer = (state = initState, action) => {
           resetPasswordSuccess:null,
           changePasswordError:null,
           changePasswordSuccess:null,
-          fbNewUser:false
+          fbNewUser:false,
+          isUpdated:false,
+          updateError:null
       }
       case 'RESET_PASSWORD_SUCCESS':
       return {

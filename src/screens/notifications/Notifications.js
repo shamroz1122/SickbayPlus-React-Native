@@ -2,7 +2,7 @@ import React, {useState,useEffect} from 'react'
 import { StyleSheet, View,Text,TouchableOpacity,RefreshControl,FlatList,ActivityIndicator,Linking  } from 'react-native';
 import { Card, CardItem,Icon,Item,Input,Left,Body  } from 'native-base';
 import { SimpleAnimation } from 'react-native-simple-animations';
-import { getNotifications, clearNotificationsMessage,loadingFlag } from '../../redux/actions/notificationsActions'
+import { getNotifications, clearNotificationsMessage,loadingFlagNotify } from '../../redux/actions/notificationsActions'
 import { connect } from 'react-redux'
 import moment from 'moment'
 
@@ -216,6 +216,7 @@ function Notifications(props){
              )
 
         }else{
+            
             if(props.notifications.length > 0)
             {
                 return (
@@ -231,11 +232,27 @@ function Notifications(props){
                 
                 )
             }else{
-                return (
-                    <View style={{flexDirection:'row',justifyContent:'center'}}>
-                        <Text style={{color:'#000000',fontFamily:'Montserrat-Black'}}>No Record Found!</Text>
-                    </View>
-                )
+                
+                if(state.notifications.length > 0)
+                {
+
+                    return (
+                        <View style={{flexDirection:'row',justifyContent:'center'}}>
+                            <Text style={{color:'#000000',fontFamily:'Montserrat-Black'}}>No More Records Found!</Text>
+                        </View>
+                    )
+
+                }else{
+
+                    return (
+                        <View style={{flexDirection:'row',justifyContent:'center'}}>
+                            <Text style={{color:'#000000',fontFamily:'Montserrat-Black'}}>No Record Found!</Text>
+                        </View>
+                    )
+
+                }
+              
+
             }
           
         }
@@ -248,11 +265,10 @@ function Notifications(props){
     
     const handleLoadMore = () => {
       
-   
         const page = state.page + 1; // increase page by 1
         setState({...state,page:page,loading:true})
         const pagenumber = {page:page}
-        props.loadingFlag()           
+        props.loadingFlagNotify()           
         props.getNotifications(pagenumber) // method for API call 
       
   }
@@ -262,8 +278,9 @@ function Notifications(props){
         const page = 1; // increase page by 1
         setState({...state,page:page,notifications:[],filtered:[]})
         const pagenumber = {page:page}
-        props.loadingFlag()           
+        props.loadingFlagNotify()           
         props.getNotifications(pagenumber) // method for API call 
+
       }
 
 
@@ -322,7 +339,7 @@ const mapDispatchToProps = (dispatch) => {
     return {
         getNotifications: (creds) => dispatch(getNotifications(creds)),
         clearNotificationsMessage:()=>dispatch(clearNotificationsMessage()),
-        loadingFlag:() => dispatch(loadingFlag()),
+        loadingFlagNotify:() => dispatch(loadingFlagNotify()),
     }
 }
 

@@ -1,11 +1,12 @@
 import React, {useState,useEffect} from 'react'
-import { StyleSheet, Text, View,Image,KeyboardAvoidingView,Platform  } from 'react-native';
+import { StyleSheet, Text, View,Image,KeyboardAvoidingView,Platform,ImageBackground  } from 'react-native';
 import { Card, CardItem,Icon,Input,Item,Button,Content,Spinner } from 'native-base';
 import logo from '../../../assets/logo.png'
 import { SimpleAnimation } from 'react-native-simple-animations';
 import { connect } from 'react-redux'
 import { resetPassword, clearMessage } from '../../redux/actions/authActions'
 import Dialog from "react-native-dialog";
+import watermark from '../../../assets/watermark.png'
 
 function ForgotPassword(props){
 
@@ -124,9 +125,11 @@ function ForgotPassword(props){
                 
                 </Dialog.Container>
 
-                       <View style={{flex:1,backgroundColor:'#5FB8B6'}}>
+                 
+                <ImageBackground style={{width: '100%',flex:1,backgroundColor:'#5FB8B6'}} source={watermark} >
 
-                       </View>
+                </ImageBackground>
+
                        <View style={{flex:2,backgroundColor:'#ffffff',padding:20}}>
                         <Card style={{elevation:10,height:400,bottom:170,borderRadius: 25 }}>
                         <Content>

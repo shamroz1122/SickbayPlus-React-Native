@@ -2,10 +2,15 @@ import React, {useState,useEffect} from 'react'
 import { StyleSheet, View,TouchableOpacity,Text,KeyboardAvoidingView,ImageBackground } from 'react-native';
 import { Card, CardItem,H3,Icon,Thumbnail,Textarea,Content,Button,Item,Input,Radio,Picker } from 'native-base'
 import uuid from 'uuid/v1';
-import image from '../../../assets/doctorImage.png'
+import image from '../../../assets/dummyDoctor.png'
 import ImagePicker from 'react-native-image-picker';
 import Dialog from "react-native-dialog";
 import watermark from '../../../assets/watermark.png'
+import { uploadAttachment,clearAppointmentMessages } from '../../redux/actions/appointmentActions'
+import Spinner from 'react-native-loading-spinner-overlay';
+
+import { connect } from 'react-redux'
+
 
 function AskAQuestion(props){
 
@@ -16,14 +21,32 @@ function AskAQuestion(props){
                 modal2:false,
                 gender:'male',
                 appType:'',
-                age:0,
+                age:'',
                 message:'',
-                weight:''
+                weight:'',
+                loading:false
     })
 
     useEffect(()=>{
-     
-    },[])
+            if(Object.keys(props.uploadedAttachment).length)
+            {
+                
+                    setState((state)=>({
+                        ...state,
+                        images: state.images.map(el => (el.key === props.uploadedAttachment.key ? {...el,uri:props.uploadedAttachment.uri} : el)), 
+                        loading:false
+                    }))
+                    props.clearAppointmentMessages()
+              
+            }
+
+            if(props.uploadedAttachmentError)
+            {
+                setState({...state,loading:false,modal2:true,message:props.uploadedAttachmentError})
+                props.clearAppointmentMessages()
+            }
+            
+    },[props.uploadedAttachment,props.uploadedAttachmentError])
 
 
     const styles = StyleSheet.create({
@@ -70,15 +93,19 @@ function AskAQuestion(props){
             } else {
               const source = { uri: response.uri }
                 
-             // console.log(res)
+                // console.log(res)
                 // You can also display the image using data:
-               //  const source = { uri: 'data:image/jpeg;base64,' + response.data };
-            
+                //  const source = { uri: 'data:image/jpeg;base64,' + response.data };
+                    const key = uuid()
                     setState({
                         ...state,
-                        images: [...state.images,{key:uuid(),src:source,}]
+                        images: [...state.images,{key:key,src:source,uri:''}],
+                        loading:true
                     })  
-                
+
+                    const imageData = {key:key,image:response.data}
+                    props.uploadAttachment(imageData)
+
             }
           });
     }
@@ -87,7 +114,7 @@ function AskAQuestion(props){
             state.images.map(image => {
                     
                     return(
-                        <View key={image.key} style={{flexDirection:'row'}}>
+                        <View key={image.key} style={{flexDirection:'row',padding:5}}>
                               <Thumbnail style={{width:50,borderRadius:6,height:50,marginLeft:10}} square source={image.src} />
                               <Icon onPress={() => removeImage(image.key)} style={{fontSize:18,color:'#5FB8B6'}} type="Ionicons" name="close-circle"/>
                         </View>
@@ -123,44 +150,80 @@ function AskAQuestion(props){
         setState({...state,weight:text})
     }
     const nextPage = () => {
+  
 
-        if(state.question=='')
+        if(props.user.address=='' || props.user.country=='' || props.user.timezone==null)
         {
-         
-            setState({...state,message:'Please ask a question or write down any query about your disease.',modal2:true})
+          
 
-        }else if (state.weight==''){
+            setState({...state,modal2:true,message:'Please go to settings and complete your profile before booking an appointment.'})
+      
+        }else{
 
-            setState({...state,modal2:true,message:'Please enter your estimated weight.'})
-
-        }else if (state.age==0){
-
-            setState({...state,modal2:true,message:'Please select your age range.'})
-        }else if (state.appType==''){
-
-            setState({...state,modal2:true,message:'Please select appointment type.'})
+            if(state.question=='')
+            {
+             
+                setState({...state,message:'Please ask a question or write down any query about your disease.',modal2:true})
+    
+            }else if (state.weight==''){
+    
+                setState({...state,modal2:true,message:'Please enter your estimated weight.'})
+    
+            }else if (state.age==0){
+    
+                setState({...state,modal2:true,message:'Please select your age range.'})
+            }else if (state.appType==''){
+    
+                setState({...state,modal2:true,message:'Please select appointment type.'})
+    
+            }
+            else{
+    
+                const appointmentDetails = {
+                                            question:state.question,
+                                            appointmentType:state.appType,
+                                            gender:state.gender,
+                                            weight:state.weight,
+                                            age:state.age,
+                                            attachments: JSON.stringify(state.images)
+                                           }
+                props.navigation.navigate('SelectAppointmentDate',{doctor:props.navigation.getParam('doctor'),appointemntType:state.appType,appointmentDetails:appointmentDetails})
+            
+            }
 
         }
-        else{
 
-            const appointmentDetails = {
-                                        question:state.question,
-                                        appointmentType:state.appType,
-                                        gender:state.gender,
-                                        weight:state.weight,
-                                        age:state.age
-                                       }
-            props.navigation.navigate('SelectAppointmentDate',{doctor:props.navigation.getParam('doctor'),appointemntType:state.appType,appointmentDetails:appointmentDetails})
-        
-        }
+    
         
     }
 
+    var category =''
+    if(props.navigation.getParam('doctor').category=='')
+    {
+   
+            if(props.navigation.getParam('doctor').med_area==3)
+            {
+
+                 category = 'General Medicine'
+
+            }else if(props.navigation.getParam('doctor').med_area==2)
+            {
+
+                category = 'Pediatric'
+
+            }
+    }
 
 
     return (
 
         <View style={styles.container}>
+
+            <Spinner
+              overlayColor="rgba(0, 0, 0, 0.3)"
+              visible={state.loading}
+              color = "#5FB8B6"
+            />
 
                 <Dialog.Container headerStyle={{margin:0}} contentStyle={{padding:0}} footerStyle={{height:130}}   visible={state.modal}>
                  
@@ -217,9 +280,9 @@ function AskAQuestion(props){
                            <Card style={{elevation:8,height:200,borderRadius: 15,bottom:110 }}>
                             
                                     <CardItem   style={{ borderRadius: 15,flex:1,flexDirection:'column',justifyContent:'space-between' }}>
-                                        <Thumbnail style={{borderColor:'#5FB8B6',borderWidth:2}} large source={image} />
+                                        <Thumbnail style={{borderColor:'#5FB8B6',borderWidth:2}} large source={props.navigation.getParam('doctor').image==null?image:{uri:props.navigation.getParam('doctor').image}} />
                                         <H3 style={{fontFamily:'Montserrat-Bold'}}>{props.navigation.getParam('doctor').name} </H3>
-                                        <Text style={{fontFamily:'Montserrat-Bold',fontSize:16,color:'#5FB8B6'}}>{props.navigation.getParam('doctor').category} </Text>
+                                        <Text style={{fontFamily:'Montserrat-Bold',fontSize:16,color:'#5FB8B6'}}>{ props.navigation.getParam('doctor').category==''?category:props.navigation.getParam('doctor').category } </Text>
                                         <View style={{borderBottomColor: '#5FB8B6',borderBottomWidth: 1,width:'10%'}}/>
                                   
                                         <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',width:'80%'}}>
@@ -270,8 +333,8 @@ function AskAQuestion(props){
                                            <Text style={{fontFamily:'Montserrat-Bold',color:'#000000',paddingLeft:5,fontSize:12}}>Attach medical report and images: <Text style={{color:'#cccccc',fontSize:10}}>(Optional)</Text></Text>
                                         </View>
 
-                                         <View style={{flexDirection:'row'}}> 
-                                           <TouchableOpacity onPress={state.images.length<5?selectImage:closeModal}>
+                                         <View style={{flexDirection:'row',flexWrap:'wrap'}}> 
+                                           <TouchableOpacity style={{padding:5}} onPress={state.images.length<5?selectImage:closeModal}>
                                                <View style={{width:50,borderRadius:6,height:50,borderWidth:1,borderColor:'#5FB8B6',alignItems:'center',justifyContent:'center'}}>
                                                <Icon style={{color:'#5FB8B6',fontSize:32}} type="Ionicons" name="add"/>
                                                </View>
@@ -319,12 +382,52 @@ function AskAQuestion(props){
                                                         </Picker>
                                                     </Item>
                                                 </View>
+
                                                 <View style={{width:'50%',flexDirection:'row',alignItems:'center'}}>
+                                                    <Text style={{fontFamily:'Montserrat-Bold',color:'#000000',fontSize:12}}>Weight: </Text>
+                                                    <Item style={{borderColor:'#5FB8B6',width:'70%'}}>
+                                                        <Picker
+                                                        note
+                                                        mode="dropdown"
+                                                        style={{height:25}}
+                                                        selectedValue={state.weight}
+                                                        onValueChange={(weight)=>setState({...state,weight:weight})}
+                                                        >
+                                                        <Picker.Item label="0-10 kg" value="0-10" />
+                                                        <Picker.Item label="10-20 kg" value="10-20" />
+                                                        <Picker.Item label="20-30 kg" value="20-30" />
+                                                        <Picker.Item label="30-40 kg" value="30-40" />
+                                                        <Picker.Item label="40-50 kg" value="40-50" />
+                                                        <Picker.Item label="50-60 kg" value="50-60" />
+                                                        <Picker.Item label="60-70 kg" value="60-70" />
+                                                        <Picker.Item label="70-80 kg" value="70-80" />
+                                                        <Picker.Item label="80-90 kg" value="80-90" />
+                                                        <Picker.Item label="90-100 kg" value="90-100" />
+                                                        <Picker.Item label="100-110 kg" value="100-110" />
+                                                        <Picker.Item label="110-120 kg" value="110-120" />
+                                                        <Picker.Item label="120-130 kg" value="120-130" />
+                                                        <Picker.Item label="130-140 kg" value="130-140" />
+                                                        <Picker.Item label="140-150 kg" value="140-150" />
+                                                        <Picker.Item label="150-160 kg" value="150-160" />
+                                                        <Picker.Item label="160-170 kg" value="160-170" />
+                                                        <Picker.Item label="170-180 kg" value="170-180" />
+                                                        <Picker.Item label="180-190 kg" value="180-190" />
+                                                        <Picker.Item label="190-200 kg" value="190-200" />
+                                                        <Picker.Item label="200-210 kg" value="200-210" />
+                                                         <Picker.Item label="210-220 kg" value="210-220" />
+                                                         <Picker.Item label="220-230 kg" value="220-230" />
+                                                         <Picker.Item label="230-240 kg" value="230-240" />
+                                                         <Picker.Item label="240-250 kg" value="240-250" />
+                                                        </Picker>
+                                                    </Item>
+                                                </View>
+
+                                                {/* <View style={{width:'50%',flexDirection:'row',alignItems:'center'}}>
                                                   <Text style={{fontFamily:'Montserrat-Bold',color:'#000000',fontSize:12}}>Weight: </Text>
                                                    <Item style={{borderColor:'#5FB8B6',width:'70%',height:25}} >
                                                        <Input onChangeText={onChangeWeight} style={{fontSize:10,fontFamily:'Montserrat-Bold'}}  />
                                                    </Item>
-                                                </View>
+                                                </View> */}
                                             
                                              
                                         </View>
@@ -369,13 +472,16 @@ function AskAQuestion(props){
                                                   
                                                   <TouchableOpacity onPress={()=>setState({...state,appType:'chat'})}><Icon style={{color:state.appType=='chat'?'#5FB8B6':'#000000',fontSize:22,paddingLeft:30}} type="Ionicons" name="chatboxes"/></TouchableOpacity> 
                                            
-                                          </View>
+                                           </View>
 
 
                                       <View style={{flexDirection:'row',alignItems:'center',justifyContent:'center'}}> 
-                                          <Button onPress={nextPage}  rounded block style={styles.button} >
+                                         
+                                         
+                                   
+                                           <TouchableOpacity onPress={nextPage} rounded block style={{elevation:6,backgroundColor:'#5FB8B6',height:25,width:'30%',alignItems:'center',justifyContent:'center',borderRadius:20}} >
                                              <Text style={{color:'#ffffff',fontSize:14,fontFamily:'Montserrat-Black'}}>Next</Text>
-                                           </Button>
+                                           </TouchableOpacity>
                                        </View> 
 
                                {/* </View> */}
@@ -386,4 +492,28 @@ function AskAQuestion(props){
     )
 }
 
-export default AskAQuestion
+
+
+
+
+const mapStateToProps = (state) => {
+    return {
+        user: state.auth.user,
+        uploadedAttachment: state.appointment.uploadedAttachment,
+        uploadedAttachmentError: state.appointment.uploadedAttachmentError,
+    }
+}
+
+
+
+const mapDispatchToProps = (dispatch) => {
+
+    return {
+        uploadAttachment: (creds) => dispatch(uploadAttachment(creds)),
+        clearAppointmentMessages:() => dispatch(clearAppointmentMessages())
+    }
+
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(AskAQuestion)
+

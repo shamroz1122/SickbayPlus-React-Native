@@ -1,8 +1,8 @@
 import React, {useState,useEffect} from 'react'
 import { StyleSheet, View,TouchableOpacity,Text } from 'react-native';
 import { Card, CardItem,H3,Icon,Thumbnail,Content} from 'native-base'
-import image from '../../../assets/doctorImage.png'
 import {Calendar} from 'react-native-calendars';
+import image from '../../../assets/dummyDoctor.png'
 
 console.disableYellowBox = true
 function SelectAppointmentDate(props){
@@ -11,7 +11,7 @@ function SelectAppointmentDate(props){
                
             
     })
-
+ 
 
     const styles = StyleSheet.create({
         container:{
@@ -51,7 +51,7 @@ function SelectAppointmentDate(props){
                            <Card style={{elevation:8,height:200,borderRadius: 15,bottom:110 }}>
                             
                                     <CardItem   style={{ borderRadius: 15,flex:1,flexDirection:'column',justifyContent:'space-between' }}>
-                                        <Thumbnail style={{borderColor:'#5FB8B6',borderWidth:2}} large source={image} />
+                                        <Thumbnail style={{borderColor:'#5FB8B6',borderWidth:2}} large source={props.navigation.getParam('doctor').image==null?image:{uri:props.navigation.getParam('doctor').image}} />
                                         <H3 style={{fontFamily:'Montserrat-Bold'}}>{props.navigation.getParam('doctor').name} </H3>
                                         <Text style={{fontFamily:'Montserrat-Bold',fontSize:16,color:'#5FB8B6'}}>{props.navigation.getParam('doctor').category} </Text>
                                         <View style={{borderBottomColor: '#5FB8B6',borderBottomWidth: 1,width:'10%'}}/>

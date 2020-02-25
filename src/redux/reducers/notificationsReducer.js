@@ -30,7 +30,7 @@ const initState = {
               checkNotifications:2,
               notifications:[]
         }
-        case 'LOADING':
+        case 'NOTIFY_LOADING':
         return {
               ...state,
               loading:action.loading

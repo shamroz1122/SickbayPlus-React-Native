@@ -2,7 +2,8 @@ import React, {useState,useEffect} from 'react'
 import { StyleSheet, View,Text,TouchableOpacity,RefreshControl,FlatList,ActivityIndicator } from 'react-native';
 import { Card, CardItem,Icon,Item,Input  } from 'native-base';
 import { SimpleAnimation } from 'react-native-simple-animations';
-import { getCategories, clearCategoryMessage,loadingFlag } from '../../redux/actions/categoriesActions'
+import { getCategories, clearCategoryMessage,loadingFlagCat } from '../../redux/actions/categoriesActions'
+import { clearDoctors } from '../../redux/actions/doctorsActions'
 import { connect } from 'react-redux'
 
 
@@ -11,14 +12,19 @@ class MyListItem extends React.PureComponent {
     render() { 
 
       return (
-           <TouchableOpacity onPress={()=>this.props.navigation.navigate('Doctors')}>
+           <TouchableOpacity onPress={()=> { 
+
+               this.props.clearDoctors()
+               this.props.navigation.navigate('Doctors',{parent:this.props.parent_id,cat_id:this.props.item.id})
+        
+           }}>
                     
                     <Card  style={{elevation:6,height:70,borderRadius:8,marginBottom:15 }}>
                                 
                         <CardItem  style={{ borderRadius: 8,flexDirection:'row',flex:1,justifyContent:'space-between',alignItems:'center' }}>
                         
                                 <Text style={{color:'#000000',fontFamily:'Montserrat-Bold',fontSize:16}}>
-                                {this.props.item.title}
+                                {this.props.item.name}
                                 </Text>
 
                                 <Icon style={{fontSize:30}} type="Ionicons" name="arrow-round-forward"/>
@@ -52,7 +58,7 @@ function SelectCategory(props){
     },[props.loading])
 
     useEffect(()=>{
-
+     
         if(props.categories.length > 0 && props.checkCategories==1)
         {
             setState(
@@ -67,15 +73,14 @@ function SelectCategory(props){
            // props.clearCategoryMessage()
             
         }else if(state.categories.length == 0 && props.checkCategories==3){
-            
-        
+     
             props.navigation.setParams({ showSearchBar: showSearchBar })
             setState({...state,loading:true})
             const pageNumber = {page:state.page}
             props.getCategories(pageNumber)
 
         }else if(state.categories.length == 0 && props.checkCategories==2){
-            
+      
             setState({...state,loading:false})
     
         }
@@ -154,8 +159,10 @@ function SelectCategory(props){
              )
 
         }else{
+
             if(props.categories.length > 0)
             {
+                
                 return (
 
                     <TouchableOpacity onPress={() => handleLoadMore()} style={{flex:1,flexDirection:'row',justifyContent:'space-around',alignItems:'center',marginBottom:10,backgroundColor:'#5FB8B6',height:25,width:'30%',alignSelf:'center'}}>
@@ -169,13 +176,26 @@ function SelectCategory(props){
                 
                 
                 )
+
             }else{
-                return (
-                    <View style={{flexDirection:'row',justifyContent:'center'}}>
-                        <Text style={{color:'#000000',fontFamily:'Montserrat-Black'}}>No Record Found!</Text>
-                    </View>
-                )
+
+                if(state.categories.length > 0)
+                {
+                    return (
+                        <View style={{flexDirection:'row',justifyContent:'center'}}>
+                            <Text style={{color:'#000000',fontFamily:'Montserrat-Black'}}>No More Records Found!</Text>
+                        </View>
+                    )
+                }else{
+                    return (
+                        <View style={{flexDirection:'row',justifyContent:'center'}}>
+                            <Text style={{color:'#000000',fontFamily:'Montserrat-Black'}}>No Record Found!</Text>
+                        </View>
+                    )
+                }
+             
             }
+
         }
         
     }
@@ -190,7 +210,7 @@ function SelectCategory(props){
         const page = state.page + 1; // increase page by 1
         setState({...state,page:page,loading:true})
         const pagenumber = {page:page}
-        props.loadingFlag()           
+        props.loadingFlagCat()           
         props.getCategories(pagenumber) // method for API call 
       
   }
@@ -200,8 +220,12 @@ function SelectCategory(props){
         const page = 1; // increase page by 1
         setState({...state,page:page,categories:[],filtered:[]})
         const pagenumber = {page:page}
-        props.loadingFlag()           
+        props.loadingFlagCat()           
         props.getCategories(pagenumber) // method for API call 
+      }
+
+      const clearDoctors = () => {
+        props.clearDoctors()
       }
 
 
@@ -209,6 +233,8 @@ function SelectCategory(props){
         <MyListItem
              item={item}
              navigation={props.navigation}
+             parent_id={props.navigation.getParam('parent')}
+             clearDoctors={clearDoctors}
         />
       )
 
@@ -259,7 +285,8 @@ const mapDispatchToProps = (dispatch) => {
     return {
         getCategories: (creds) => dispatch(getCategories(creds)),
         clearCategoryMessage:()=>dispatch(clearCategoryMessage()),
-        loadingFlag:() => dispatch(loadingFlag())
+        loadingFlagCat:() => dispatch(loadingFlagCat()),
+        clearDoctors:() => dispatch(clearDoctors())
     }
 }
 

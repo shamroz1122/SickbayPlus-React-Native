@@ -11,6 +11,7 @@ import Home from '../screens/home/Home';
 import AskAQuestion from '../screens/home/AskAQuestion';
 import SelectAppointmentDate from '../screens/home/SelectAppointmentDate';
 import SelectTimeSlot from '../screens/home/SelectTimeSlot';
+import StartSession from '../screens/myAppointments/StartSession';
 import SelectCategory from '../screens/home/SelectCategory';
 import Doctors from '../screens/home/Doctors';
 import NewBooking from '../screens/home/NewBooking';
@@ -298,7 +299,21 @@ let SlideFromRight = (index, position, width) => {
                 paddingRight:15
               }             
         }
-      }}
+      }},
+      
+      StartSession:{screen:StartSession,
+        navigationOptions:({ navigation }) => {
+        return {
+              headerStyle:{
+                  backgroundColor:'#5FB8B6',
+              },
+              headerTitle:'Appointment Session',
+              headerTintColor:'#ffffff',
+              headerTitleStyle:{
+                fontFamily:'Montserrat-Black',
+              }  
+        }
+      }},
 
       },
       {

@@ -7,6 +7,9 @@ import specialistImage from '../../../assets/Specialist.png'
 import medLabImage from '../../../assets/Medlab.png'
 import pharmacistImage from '../../../assets/pharmacist.png'
 import chatImage from '../../../assets/chatWithUs.png'
+import { clearDoctors } from '../../redux/actions/doctorsActions'
+import { connect } from 'react-redux'
+
 function NewBooking(props){
 
     const styles = StyleSheet.create({
@@ -23,8 +26,12 @@ function NewBooking(props){
 
           
                        <View style={{flex:1,flexDirection:'row',paddingBottom:0,justifyContent:'space-between',padding:20}}>
+                         
                            <View style={{width:'48%'}}>
-                               <TouchableOpacity onPress={()=> props.navigation.navigate('Doctors')}>
+                               <TouchableOpacity onPress={ () => {
+                                   props.clearDoctors()
+                                   props.navigation.navigate('Doctors',{parent:3,cat_id:0} )
+                               }}>
                                    <Card style={{elevation:8,height:170,borderRadius: 8 }}>
                             
                                         <CardItem  style={{ borderRadius: 8,flexDirection:'column',flex:1,justifyContent:'space-around',alignItems:'center' }}>
@@ -43,7 +50,12 @@ function NewBooking(props){
                            </View>
 
                            <View style={{width:'48%'}}>
-                                    <TouchableOpacity onPress={()=> props.navigation.navigate('SelectCategory')}>
+                                    <TouchableOpacity onPress={()=> {
+                                        
+                                         props.clearDoctors()
+                                         props.navigation.navigate('SelectCategory',{parent:1})
+                                        
+                                    }}>
 
                                        <Card style={{elevation:8,height:170,borderRadius: 8 }}>
                                 
@@ -66,7 +78,12 @@ function NewBooking(props){
 
                        <View style={{flex:1,paddingTop:0,paddingBottom:0,flexDirection:'row',justifyContent:'space-between',padding:20}}>
                            <View style={{width:'48%'}}>
-                               <TouchableOpacity onPress={()=> props.navigation.navigate('Doctors')}>
+                               <TouchableOpacity onPress={() => { 
+                               
+                                   props.clearDoctors()
+                                   props.navigation.navigate('Doctors',{parent:2,cat_id:0}) 
+                               
+                               }}>
                                   
                                    <Card style={{elevation:8,height:170,borderRadius: 8 }}>
                             
@@ -153,4 +170,16 @@ function NewBooking(props){
     )
 }
 
-export default NewBooking
+
+
+
+const mapDispatchToProps = (dispatch) => {
+
+    return {
+     
+        clearDoctors:()=>dispatch(clearDoctors()),
+    
+    }
+}
+
+export default connect(null, mapDispatchToProps)(NewBooking)

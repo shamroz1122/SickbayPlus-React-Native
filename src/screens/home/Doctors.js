@@ -2,9 +2,9 @@ import React, {useState,useEffect} from 'react'
 import { StyleSheet, View,Text,TouchableOpacity,RefreshControl,FlatList,ActivityIndicator } from 'react-native';
 import { Card, CardItem,Icon,Item,Input,Thumbnail,Body,Left,Button} from 'native-base';
 import { SimpleAnimation } from 'react-native-simple-animations';
-import image from '../../../assets/doctorImage.png'
+import image from '../../../assets/dummyDoctor.png'
 import StarRating from 'react-native-star-rating'
-import { getDoctors, clearDoctorsMessage,loadingFlag } from '../../redux/actions/doctorsActions'
+import { getDoctors, clearDoctorsMessage,loadingFlagDoc } from '../../redux/actions/doctorsActions'
 import { connect } from 'react-redux'
 
 
@@ -12,91 +12,123 @@ import { connect } from 'react-redux'
 class MyListItem extends React.PureComponent {
 
     render() { 
-
-        var currentTime = new Date().getHours() +'.' + new Date().getMinutes() 
-        var time = this.props.item.endTime;
-        var hours = Number(time.match(/^(\d+)/)[1]);
-        var minutes = Number(time.match(/.(\d+)/)[1]);
-        var AMPM = time.match(/\s(.*)$/)[1];
-        if(AMPM == "PM" && hours<12) hours = hours+12;
-        if(AMPM == "AM" && hours==12) hours = hours-12;
-        var sHours = hours.toString();
-        var sMinutes = minutes.toString();
-        if(hours<10) sHours = "0" + sHours;
-        if(minutes<10) sMinutes = "0" + sMinutes;
-        var endTime = sHours + "." + sMinutes
-      
-    
-        var available = false
-        if(Number(currentTime)<Number(endTime))
+        if(this.props.item.endTime!='' && this.props.item.startTime!='')
         {
-       
-            available = true
+            var currentTime = new Date().getHours() +'.' + new Date().getMinutes() 
+            var time = this.props.item.endTime;
+            var hours = Number(time.match(/^(\d+)/)[1]);
+            var minutes = Number(time.match(/.(\d+)/)[1]);
+            var AMPM = time.match(/\s(.*)$/)[1];
+            if(AMPM == "PM" && hours<12) hours = hours+12;
+            if(AMPM == "AM" && hours==12) hours = hours-12;
+            var sHours = hours.toString();
+            var sMinutes = minutes.toString();
+            if(hours<10) sHours = "0" + sHours;
+            if(minutes<10) sMinutes = "0" + sMinutes;
+            var endTime = sHours + "." + sMinutes
+          
+            var available = false
+            if(Number(currentTime)<Number(endTime))
+            {
+           
+                available = true
+            }
+    
+            var category =''
+            if(this.props.item.category=='')
+            {
+                    if(this.props.item.med_area==3)
+                    {
+        
+                         category = 'General Medicine'
+        
+                    }else if(this.props.item.med_area==2)
+                    {
+        
+                        category = 'Pediatric'
+        
+                    }
+            }
+        
+
+            // console.log(this.props.item)
+          return (
+            <TouchableOpacity onPress={() => this.props.navigation.navigate('AskAQuestion',{doctor:this.props.item})} >
+    
+                                                   
+            <Card  style={{elevation:6,height:150,borderRadius:15,marginBottom:15 }}>
+                        
+                <CardItem  style={{ borderRadius: 15,flex:1,flexDirection:'column',alignItems:'center',justifyContent:'space-between' }}>
+                
+                    <View style={{flex:2,flexDirection:'row',justifyContent:'space-between',width:'100%'}}>
+                        <Left>
+                            <Thumbnail large source={this.props.item.image==null?image:{uri:this.props.item.image}} />
+                            <Body>
+                                <View style={{flexDirection:'row',justifyContent:'space-between'}}>
+                                    <Text style={{fontFamily:'Montserrat-Bold',color:'#000000',fontSize:14}}>{ this.props.item.name  }</Text>
+                                    <View style={{width: 10, height: 10, borderRadius: 10/2, backgroundColor: available?'#90ee90':'orange'}}></View>
+                                </View>
+                            
+                                <Text style={{color:'#5FB8B6',fontFamily:'Montserrat-Bold',fontSize:12}}>{ this.props.item.category==''?category:this.props.item.category }</Text>
+                                <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',width:'90%'}}>
+                                <Icon style={{color:'#5FB8B6',fontSize:14}} type="Ionicons" name="videocam"/>
+                                <Text style={{fontFamily:'Montserrat-Bold',color:'#000000',fontSize:10}}>${this.props.item.videoHourlyRate}/hr</Text> 
+                                <Icon style={{color:'#5FB8B6',fontSize:14}} type="Ionicons" name="call"/>
+                                <Text style={{fontFamily:'Montserrat-Bold',color:'#000000',fontSize:10}}>${this.props.item.voiceHourlyRate}/hr</Text> 
+                                <Icon style={{color:'#5FB8B6',fontSize:14}} type="Ionicons" name="chatboxes"/>
+                                <Text style={{fontFamily:'Montserrat-Bold',color:'#000000',fontSize:10}}>${this.props.item.chatHourlyRate}/hr</Text> 
+                                </View>
+                                <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',width:'70%'}}>
+                                <Icon style={{color:'#5FB8B6',fontSize:14}} type="Ionicons" name="time"/>
+                                <Text style={{fontFamily:'Montserrat-Bold',color:'#000000',fontSize:10}}>{this.props.item.startTime}</Text> 
+                                <Text style={{fontFamily:'Montserrat-Bold',color:'#5FB8B6',fontSize:10}}>TO</Text> 
+                                <Text style={{fontFamily:'Montserrat-Bold',color:'#000000',fontSize:10}}>{this.props.item.endTime}</Text> 
+                                
+                                </View>
+                            </Body>
+                        </Left>
+                    </View>
+    
+                    <View style={{flex:1,flexDirection:'row',justifyContent:'space-between',alignItems:'center',width:'100%'}}>
+                        <View style={{width:'50%'}}>
+                        <StarRating
+                                disabled={false}
+                                maxStars={5}
+                                starSize={12}
+                                containerStyle={{flex:1,flexDirection:'row',justifyContent:'space-between',alignItems:'center',width:'50%'}}
+                                rating={this.props.item.rating.toFixed(2)}
+                                fullStarColor="orange"
+                                emptyStarColor="orange"
+                        />
+                        </View>
+                        <View style={{width:'50%',flexDirection:'row',justifyContent:'flex-end'}}>
+                         
+
+                                <TouchableOpacity onPress={() => this.props.navigation.navigate('AskAQuestion',{doctor:this.props.item})}  rounded block style={{elevation:10,backgroundColor:'#5FB8B6',height:25,width:'60%',alignItems:'center',justifyContent:'center',borderRadius:20}} >
+                                    <Text style={{color:'#ffffff',fontSize:10,fontFamily:'Montserrat-Black'}}>BOOK NOW</Text>
+                                </TouchableOpacity>
+                         
+                    
+                        </View>
+    
+                    </View>
+                
+    
+                </CardItem>
+        
+            </Card>
+            </TouchableOpacity>
+          )
+        }else{
+
+            return(
+               null
+            )
+
+
         }
 
-      return (
-        <TouchableOpacity onPress={() => this.props.navigation.navigate('AskAQuestion',{doctor:this.props.item})} >
-
-                                               
-        <Card  style={{elevation:6,height:150,borderRadius:15,marginBottom:15 }}>
-                    
-            <CardItem  style={{ borderRadius: 15,flex:1,flexDirection:'column',alignItems:'center',justifyContent:'space-between' }}>
-            
-                <View style={{flex:2,flexDirection:'row',justifyContent:'space-between',width:'100%'}}>
-                    <Left>
-                        <Thumbnail large source={image} />
-                        <Body>
-                            <View style={{flexDirection:'row',justifyContent:'space-between'}}>
-                                <Text style={{fontFamily:'Montserrat-Bold',color:'#000000',fontSize:14}}>{ this.props.item.name  }</Text>
-                                <View style={{width: 10, height: 10, borderRadius: 10/2, backgroundColor: available?'#90ee90':'orange'}}></View>
-                            </View>
-                        
-                            <Text style={{color:'#5FB8B6',fontFamily:'Montserrat-Bold',fontSize:12}}>{ this.props.item.category }</Text>
-                            <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',width:'90%'}}>
-                            <Icon style={{color:'#5FB8B6',fontSize:14}} type="Ionicons" name="videocam"/>
-                            <Text style={{fontFamily:'Montserrat-Bold',color:'#000000',fontSize:10}}>${this.props.item.videoHourlyRate}/hr</Text> 
-                            <Icon style={{color:'#5FB8B6',fontSize:14}} type="Ionicons" name="call"/>
-                            <Text style={{fontFamily:'Montserrat-Bold',color:'#000000',fontSize:10}}>${this.props.item.voiceHourlyRate}/hr</Text> 
-                            <Icon style={{color:'#5FB8B6',fontSize:14}} type="Ionicons" name="chatboxes"/>
-                            <Text style={{fontFamily:'Montserrat-Bold',color:'#000000',fontSize:10}}>${this.props.item.chatHourlyRate}/hr</Text> 
-                            </View>
-                            <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',width:'70%'}}>
-                            <Icon style={{color:'#5FB8B6',fontSize:14}} type="Ionicons" name="time"/>
-                            <Text style={{fontFamily:'Montserrat-Bold',color:'#000000',fontSize:10}}>{this.props.item.startTime}</Text> 
-                            <Text style={{fontFamily:'Montserrat-Bold',color:'#5FB8B6',fontSize:10}}>TO</Text> 
-                            <Text style={{fontFamily:'Montserrat-Bold',color:'#000000',fontSize:10}}>{this.props.item.endTime}</Text> 
-                            
-                            </View>
-                        </Body>
-                    </Left>
-                </View>
-
-                <View style={{flex:1,flexDirection:'row',justifyContent:'space-between',alignItems:'center',width:'100%'}}>
-                    <View style={{width:'50%'}}>
-                    <StarRating
-                            disabled={false}
-                            maxStars={5}
-                            starSize={12}
-                            containerStyle={{flex:1,flexDirection:'row',justifyContent:'space-between',alignItems:'center',width:'50%'}}
-                            rating={this.props.item.rating}
-                            fullStarColor="orange"
-                            emptyStarColor="orange"
-                    />
-                    </View>
-                    <View style={{width:'50%',flexDirection:'row',justifyContent:'flex-end'}}>
-                        <Button onPress={() => props.navigation.navigate('AskAQuestion',{doctor:this.props.item})}  rounded block style={{backgroundColor:'#5FB8B6',height:25,width:'60%'}} >
-                        <Text style={{color:'#ffffff',fontSize:10,fontFamily:'Montserrat-Black'}}>BOOK NOW</Text>
-                        </Button>
-                    </View>
-
-                </View>
-            
-
-            </CardItem>
-    
-        </Card>
-        </TouchableOpacity>
-      )
+        
     }
 
 
@@ -124,7 +156,7 @@ function Doctors(props){
     useEffect(()=>{
  
         if(props.doctors.length > 0 && props.checkDoctors==1)
-        {
+        { 
             setState(
                 (state) =>({ 
                     ...state,
@@ -134,18 +166,19 @@ function Doctors(props){
                     isRefreshing:false
                 })
             )
-           // props.clearDoctorsMessage()
+          //   props.clearDoctorsMessage()
             
         }else if(state.doctors.length == 0 && props.checkDoctors==3){
-            
-         
+       
             props.navigation.setParams({ showSearchBar: showSearchBar })
             setState({...state,loading:true})
-            const pageNumber = {page:state.page}
+            const parent = props.navigation.getParam('parent')
+            const cat_id = props.navigation.getParam('cat_id')
+            const pageNumber = {page:state.page,parent_id:parent,cat_id:cat_id}
             props.getDoctors(pageNumber)
 
         }else if(state.doctors.length == 0 && props.checkDoctors==2){
-            
+     
             setState({...state,loading:false})
     
         }
@@ -245,7 +278,8 @@ function Doctors(props){
 
         }else{
 
-            if(props.doctors.length > 0)
+           if(props.doctors.length > 0)
+           // if(state.doctors.length > 0)
             {
                 return (
                     <TouchableOpacity onPress={() => handleLoadMore()} style={{flex:1,flexDirection:'row',justifyContent:'space-around',alignItems:'center',marginBottom:10,backgroundColor:'#5FB8B6',height:25,width:'30%',alignSelf:'center'}}>
@@ -258,11 +292,21 @@ function Doctors(props){
                     </TouchableOpacity>
                 )
             }else{
-                return (
-                    <View style={{flexDirection:'row',justifyContent:'center'}}>
-                        <Text style={{color:'#000000',fontFamily:'Montserrat-Black'}}>No Record Found!</Text>
-                    </View>
-                )
+                if(state.doctors.length > 0)
+                {
+                    return (
+                        <View style={{flexDirection:'row',justifyContent:'center'}}>
+                            <Text style={{color:'#000000',fontFamily:'Montserrat-Black'}}>No More Records Found!</Text>
+                        </View>
+                    )
+                }else{
+                    return (
+                        <View style={{flexDirection:'row',justifyContent:'center'}}>
+                            <Text style={{color:'#000000',fontFamily:'Montserrat-Black'}}>No Record Found!</Text>
+                        </View>
+                    )
+                }
+             
             }
 
         }
@@ -274,8 +318,11 @@ function Doctors(props){
    
           const page = state.page + 1; // increase page by 1
           setState({...state,page:page,loading:true})
-          const pagenumber = {page:page}
-          props.loadingFlag()           
+
+          const parent = props.navigation.getParam('parent')
+          const cat_id = props.navigation.getParam('cat_id')
+          const pagenumber = {page:page,parent_id:parent,cat_id:cat_id}
+          props.loadingFlagDoc()           
           props.getDoctors(pagenumber) // method for API call 
         
     }
@@ -284,9 +331,13 @@ function Doctors(props){
    
         const page = 1; // increase page by 1
         setState({...state,page:page,doctors:[],filtered:[]})
-        const pagenumber = {page:page}
-        props.loadingFlag()           
+
+        const parent = props.navigation.getParam('parent')
+        const cat_id = props.navigation.getParam('cat_id')
+        const pagenumber = {page:page,parent_id:parent,cat_id:cat_id}
+        props.loadingFlagDoc()           
         props.getDoctors(pagenumber) // method for API call 
+
       }
 
       const _renderItem = ({item}) => (
@@ -342,7 +393,7 @@ const mapDispatchToProps = (dispatch) => {
     return {
         getDoctors: (creds) => dispatch(getDoctors(creds)),
         clearDoctorsMessage:()=>dispatch(clearDoctorsMessage()),
-        loadingFlag:() => dispatch(loadingFlag())
+        loadingFlagDoc:() => dispatch(loadingFlagDoc())
     }
 }
 

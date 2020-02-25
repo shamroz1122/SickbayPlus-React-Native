@@ -13,7 +13,9 @@ const initState = {
         return {
             ...state,
             categoryError: action.msg,
-            categories:[]
+            categories:[],
+            loading:false,
+            checkCategories:2
         } 
         case 'GET_CATEGORIES_SUCCESS':
         return { 
@@ -21,7 +23,7 @@ const initState = {
             categoryError: null,
             categories:action.categories,
             loading:false,
-            checkCategories: action.categories.length>0? 1:2
+            checkCategories: action.categories.length>0? 1:3
         }
         case 'CLEAR_CATEGORY_MESSAGES':
         return {
@@ -30,7 +32,13 @@ const initState = {
               checkCategories:2,
               categories:[]
         }
-        case 'LOADING':
+        case 'CLEAR_CATEGORIES':
+          return {
+                ...state,
+                categories:[],
+                checkCategories:3
+           }
+        case 'CAT_LOADING':
         return {
               ...state,
               loading:action.loading

@@ -2,7 +2,7 @@ import React, {useState,useEffect} from 'react'
 import { StyleSheet, View,Text,TouchableOpacity,RefreshControl,FlatList,ActivityIndicator,Linking  } from 'react-native';
 import { Card, CardItem,Icon,Item,Input,Left,Body  } from 'native-base';
 import { SimpleAnimation } from 'react-native-simple-animations';
-import { getReports, clearReportsMessage,loadingFlag } from '../../redux/actions/reportsActions'
+import { getReports, clearReportsMessage,loadingFlagReport } from '../../redux/actions/reportsActions'
 import { connect } from 'react-redux'
 
 
@@ -12,7 +12,7 @@ class MyListItem extends React.PureComponent {
 
       return (
       
-                            <TouchableOpacity key={this.props.item.id} activeOpacity={1} onPress={ ()=>{ Linking.openURL('https://www.cdc.gov/media/presskits/aahd/diabetes.pdf')}}>
+                            <TouchableOpacity key={this.props.item.id} activeOpacity={1} onPress={ ()=>{ Linking.openURL(this.props.item.pdf)}}>
                             <Card style={this.props.styles.card} >
                                 <CardItem style={{paddingTop:0,paddingBottom:0,paddingLeft:0,paddingRight:0}}>
 
@@ -27,9 +27,9 @@ class MyListItem extends React.PureComponent {
                                                  <Text style={{fontSize:16,color:'#5FB8B6',fontFamily:'Montserrat-Bold'}}>{this.props.item.doctor}</Text>
                                                  <View style={{flexDirection:'row',alignItems:'center',width:'60%'}}>
                                                     <Icon style={{color:'#5FB8B6',fontSize:14}} type="Ionicons" name="calendar"/>
-                                                    <Text style={{fontFamily:'Montserrat-Bold',color:'#000000',fontSize:12,paddingLeft:8}}>{this.props.item.appointmentDate}</Text> 
+                                                    <Text style={{fontFamily:'Montserrat-Bold',color:'#000000',fontSize:12,paddingLeft:8}}>{this.props.item.date}</Text> 
                                                     <Icon style={{color:'#5FB8B6',fontSize:14,paddingLeft:8}} type="Ionicons" name="time"/>
-                                                    <Text style={{fontFamily:'Montserrat-Bold',color:'#000000',fontSize:12,paddingLeft:8}}>{this.props.item.appointmentTime}</Text> 
+                                                    <Text style={{fontFamily:'Montserrat-Bold',color:'#000000',fontSize:12,paddingLeft:8}}>{this.props.item.time}</Text> 
                                                 </View>
                                                 
                                                
@@ -217,11 +217,26 @@ function Reports(props){
                
             )
             }else{
-                return (
-                    <View style={{flexDirection:'row',justifyContent:'center'}}>
-                        <Text style={{color:'#000000',fontFamily:'Montserrat-Black'}}>No Record Found!</Text>
-                    </View>
-                )
+
+                if(state.reports.length > 0 )
+                {
+                    return (
+                        <View style={{flexDirection:'row',justifyContent:'center'}}>
+                            <Text style={{color:'#000000',fontFamily:'Montserrat-Black'}}>No More Records Found!</Text>
+                        </View>
+                    )
+
+                }else{
+
+                    return (
+                        <View style={{flexDirection:'row',justifyContent:'center'}}>
+                            <Text style={{color:'#000000',fontFamily:'Montserrat-Black'}}>No Record Found!</Text>
+                        </View>
+                    )
+                    
+                }
+           
+
             }
         }
         
@@ -237,7 +252,7 @@ function Reports(props){
         const page = state.page + 1; // increase page by 1
         setState({...state,page:page,loading:true})
         const pagenumber = {page:page}
-        props.loadingFlag()           
+        props.loadingFlagReport()           
         props.getReports(pagenumber) // method for API call 
       
   }
@@ -247,7 +262,7 @@ function Reports(props){
         const page = 1; // increase page by 1
         setState({...state,page:page,reports:[],filtered:[]})
         const pagenumber = {page:page}
-        props.loadingFlag()           
+        props.loadingFlagReport()           
         props.getReports(pagenumber) // method for API call 
       }
 
@@ -307,7 +322,7 @@ const mapDispatchToProps = (dispatch) => {
     return {
         getReports: (creds) => dispatch(getReports(creds)),
         clearReportsMessage:()=>dispatch(clearReportsMessage()),
-        loadingFlag:() => dispatch(loadingFlag())
+        loadingFlagReport:() => dispatch(loadingFlagReport())
     }
 }
 

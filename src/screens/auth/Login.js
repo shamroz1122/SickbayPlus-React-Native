@@ -1,17 +1,19 @@
 import React, {useState,useEffect} from 'react'
-import { StyleSheet, Text, View,Image,KeyboardAvoidingView,Platform  } from 'react-native';
+import { StyleSheet, Text, View,Image,KeyboardAvoidingView,Platform,ImageBackground  } from 'react-native';
 import { Card, CardItem,Icon,Input,Item,Button,Content,Spinner } from 'native-base';
 import logo from '../../../assets/logo.png'
 import { SimpleAnimation } from 'react-native-simple-animations';
 import { connect } from 'react-redux'
-import { login, clearMessage,checkFacebookUser } from '../../redux/actions/authActions'
+import { login, clearMessage,checkFacebookUser,googleLogin } from '../../redux/actions/authActions'
 import Dialog from "react-native-dialog";
 import { LoginManager,AccessToken,GraphRequest,GraphRequestManager} from 'react-native-fbsdk';
+import AsyncStorage from '@react-native-community/async-storage';
 import {
     GoogleSignin,
     GoogleSigninButton,
     statusCodes,
   } from '@react-native-community/google-signin';
+  import watermark from '../../../assets/watermark.png'
 
 function Login(props){
 
@@ -31,7 +33,7 @@ function Login(props){
     })
 
     useEffect( ()=>{
-        //    signOutGoogle()
+           // signOutGoogle()
             LoginManager.logOut()
      
             if (props.isAuthenticated) {
@@ -48,17 +50,17 @@ function Login(props){
 
     },[props.authError,props.isAuthenticated,props.user,props.error]) 
 
-    useEffect( ()=>{
+    // useEffect( ()=>{
      
-        if(props.fbNewUser)
-        {
-            setState({...state,fbLogin:false,fbData:{},isLoading:false})
-            props.clearMessage()
-            console.log('login success Full')
-           // props.navigation.navigate('App');
-        }
+    //     if(props.fbNewUser)
+    //     {
+    //         setState({...state,fbLogin:false,fbData:{},isLoading:false})
+    //         props.clearMessage()
+    //         console.log('login success Full')
+    //        // props.navigation.navigate('App');
+    //     }
 
-    },[props.fbNewUser]) 
+    // },[props.fbNewUser]) 
 
 
 
@@ -116,9 +118,13 @@ function Login(props){
     
     })
 
-    const SignIn = () => {
+    const SignIn = async() => {
        
+
         setState({...state,isLoading:true})
+        let device_token =  await AsyncStorage.getItem('device_token');
+     //   console.log(device_token)
+        credentials.device_token = device_token
         props.login(credentials)
     }
 
@@ -150,7 +156,7 @@ function Login(props){
     }
 
 
-    const FBLogin = () => {
+    const FBLogin = async() => {
 
         if(state.fbData.email=='' || !validateEmail(state.fbData.email))
         {
@@ -159,6 +165,9 @@ function Login(props){
          
             setState({...state,isLoading:true})
            // console.log(state.fbData)
+            let device_token =  await AsyncStorage.getItem('device_token');
+          //  console.log('tokenfff',device_token)
+            state.fbData.device_token = device_token
             props.checkFacebookUser(state.fbData)
         
         }
@@ -166,7 +175,7 @@ function Login(props){
     }
 
       //Create response callback.
-    const responseInfoCallback = (error, result) => {
+    const responseInfoCallback = async(error, result) => {
             if (error) {
               alert('Error fetching data: ' + error.toString());
             } else {
@@ -177,16 +186,20 @@ function Login(props){
                     setState({...state,fbData:result,fbLogin:true})
                
                 }else{
-             
-                    setState({...state,isLoading:true})
-                    props.checkFacebookUser(result)
+                      
+                      let device_token =  await AsyncStorage.getItem('device_token');
+                      //console.log('tokenfff',device_token)
+                      result.device_token = device_token
+
+                      setState({...state,isLoading:true})
+                      props.checkFacebookUser(result)
                 }
            
        
             }
     }
 
-    const FbLogin = () => {
+    const FacebookLogin = () => {
         LoginManager.logInWithPermissions(['public_profile','email']).then(
             function(result) {
               if (result.isCancelled) {
@@ -204,7 +217,6 @@ function Login(props){
                       new GraphRequestManager().addRequest(infoRequest).start();
                     }
                   )
-
 
               }
             },
@@ -227,11 +239,17 @@ function Login(props){
 
     const signInGoogle = async () => {
         try {
+
           await GoogleSignin.hasPlayServices();
           const userInfo = await GoogleSignin.signIn();
-          console.log('hhh')
-          setState({...state, googleData:userInfo });
-          console.log(userInfo)
+          setState({...state, googleData:userInfo,isLoading:true });
+
+          let device_token =  await AsyncStorage.getItem('device_token');
+        
+          userInfo.user.device_token = device_token
+
+          props.googleLogin(userInfo)
+
         } catch (error) {
           if (error.code === statusCodes.SIGN_IN_CANCELLED) {
             console.log('cancelled')
@@ -250,6 +268,7 @@ function Login(props){
       };
 
     const GoogleLogin = () => {
+ 
         GoogleSignin.configure({
             scopes: [], // what API you want to access on behalf of the user, default is email and profile
             webClientId: '274302893670-e2v162f3jgthritqrm3banpaboqhpmss.apps.googleusercontent.com', // client ID of type WEB for your server (needed to verify user ID and offline access)
@@ -284,9 +303,11 @@ function Login(props){
                     
                  </Dialog.Container>
 
-        <View style={{flex:1,backgroundColor:'#5FB8B6'}}>
+                 <ImageBackground style={{width: '100%',flex:1,backgroundColor:'#5FB8B6'}} source={watermark} >
 
-        </View>
+                 </ImageBackground>
+
+
         <View style={{flex:2,backgroundColor:'#ffffff',padding:20}}>
         <Card style={{elevation:10,height:550,bottom:170,borderRadius: 25 }}>
         <Content>
@@ -321,7 +342,7 @@ function Login(props){
                                               <Icon style={{color:"#000000"}} type="MaterialIcons" name="mail"/>
                                               <Input style={styles.input} onChangeText={onChangeUsername}  value={credentials.username}   name="username" placeholderTextColor="#000000" placeholder='Email'/> 
                                             </Item>
-
+ 
                                             <Item rounded style={styles.password}>
                                               <Icon style={{color:"#000000"}} type="FontAwesome" name="key"/>
                                               <Input style={styles.input} onChangeText={onChangePassword} value={credentials.password}   name="password" secureTextEntry={true} placeholderTextColor="#000000" placeholder='Password'/>
@@ -345,7 +366,7 @@ function Login(props){
 
                                             <View style={{flexDirection:'row', justifyContent:'space-between'}}>
                                                 <View style={{width:'48%'}}>
-                                                    <Button rounded block onPress={FbLogin} iconRight style={styles.FBbutton}>
+                                                    <Button rounded block onPress={FacebookLogin} iconRight style={styles.FBbutton}>
                                                 
                                                             <Icon style={{color:"#355DA1",justifyContent:'center'}} type="FontAwesome" name="facebook-f"/>
                                                             <Text style={{color:'#000000',fontSize:12,fontFamily:'Montserrat-Bold'}}>FACEBOOK</Text>
@@ -361,7 +382,7 @@ function Login(props){
                                                 </View>
                                             </View>
 
-                                             <Text style={{marginTop:20,textAlign:'center',color:'#000000',fontSize:12,fontFamily:'Montserrat-Bold'}} onPress={() => props.navigation.navigate('Signup')} >If you don't have any account? <Text style={{color:'#5FB8B6'}}>Sign Up</Text> </Text>
+                                             <Text style={{marginTop:20,textAlign:'center',color:'#000000',fontSize:12,fontFamily:'Montserrat-Bold'}} onPress={() => props.navigation.navigate('Signup')} > Don't have an account? <Text style={{color:'#5FB8B6'}}>Sign Up</Text> </Text>
 
                                  </View>}
 
@@ -393,7 +414,8 @@ const mapDispatchToProps = (dispatch) => {
     return {
         login: (creds) => dispatch(login(creds)),
         clearMessage:()=>dispatch(clearMessage()),
-        checkFacebookUser:(data)=>dispatch(checkFacebookUser(data))
+        checkFacebookUser:(data)=>dispatch(checkFacebookUser(data)),
+        googleLogin:(data)=>dispatch(googleLogin(data))
     }
 
 }

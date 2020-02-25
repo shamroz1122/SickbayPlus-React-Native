@@ -11,9 +11,10 @@ const initState = {
         case 'GET_DOCTORS_ERROR':
         return {
             ...state,
-            doctorError: action.msg,
+            doctorError: action.msg, 
             doctors:[],
-            loading:false
+            loading:false,
+            checkDoctors:2
         } 
         case 'GET_DOCTORS_SUCCESS':
         return {
@@ -26,11 +27,22 @@ const initState = {
         case 'CLEAR_DOCTORS_MESSAGES':
           return {
               ...state,
-              doctorError:null,
-              checkDoctors:2,
+             doctorError:null,
+             checkDoctors:2,
+             doctors:[]
+        }
+        case 'CLEAR_DOCTORS':
+          return {
+              ...state,
+              checkDoctors:3
+        }
+        case 'CLEAR_NEW_DOCTORS':
+          return {
+              ...state,
+              checkDoctors:3,
               doctors:[]
-          }
-        case 'LOADING':
+        }
+        case 'DOC_LOADING':
             return {
               ...state,
               loading:action.loading

@@ -1,8 +1,9 @@
 const initState = {
     reportError:null,
     reports:[],
+    checkReports:3,
     loading:true,
-    checkReports:3
+ 
   }
   
   const reportsReducer = (state = initState, action) => {
@@ -30,7 +31,14 @@ const initState = {
               checkReports:2,
               reports:[]
         }
-        case 'LOADING':
+        case 'CLEAR_REPORTS':
+        return {
+                ...state,
+                reports:[],
+                checkReports:3,
+  
+        }
+        case 'REPORT_LOADING':
         return {
               ...state,
               loading:action.loading

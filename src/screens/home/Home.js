@@ -7,14 +7,13 @@ import watermark from '../../../assets/watermark.png'
 import { connect } from 'react-redux'
 
 function Home(props){
-
+ 
     const styles = StyleSheet.create({
         container:{
             flex:1
         }
 
     })
-
     return (
 
         <View style={styles.container}>

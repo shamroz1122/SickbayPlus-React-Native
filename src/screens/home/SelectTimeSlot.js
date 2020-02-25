@@ -2,13 +2,14 @@ import React, {useState,useEffect} from 'react'
 import { View, StyleSheet,Text,ActivityIndicator,TouchableOpacity } from 'react-native'
 import {Content,Icon,Button,H1,H3,Toast,Thumbnail, Spinner} from 'native-base'
 import { connect } from 'react-redux'
-import { getTimeSlots,loadingFlag,clearTimeSlots,bookingAppointment,clearAppointmentMessages } from '../../redux/actions/appointmentActions'
+import { getTimeSlots,loadingFlag,clearTimeSlots,bookingAppointment,clearAppointmentMessages,clearAppointments } from '../../redux/actions/appointmentActions'
 import uuid from 'uuid/v1';
 import Dialog from "react-native-dialog";
 import { CreditCardInput } from "react-native-input-credit-card";
 import Stripe from 'react-native-stripe-api';
 import confirmImage from '../../../assets/Booking_confirmed.png'
 import AsyncStorage from '@react-native-community/async-storage';
+import moment from 'moment'
 
 function SelectTimeSlot(props) {
     
@@ -85,31 +86,33 @@ function SelectTimeSlot(props) {
             if(props.navigation.getParam('appointmentType')=='video')
             {
          
-                appointmentPrice = (props.navigation.getParam('doctor').videoHourlyRate / 60) * props.timeSlots.timeRange
+                appointmentPrice = props.navigation.getParam('doctor').videoHourlyRate //(props.navigation.getParam('doctor').videoHourlyRate / 60) * props.timeSlots.timeRange
                 appointmentType = "Video Call Appointment"
                 appointmentIcon = "videocam"
             }else if(props.navigation.getParam('appointmentType')=='voice')
             {
               
-                appointmentPrice = (props.navigation.getParam('doctor').voiceHourlyRate / 60) * props.timeSlots.timeRange
+                appointmentPrice = props.navigation.getParam('doctor').voiceHourlyRate //(props.navigation.getParam('doctor').voiceHourlyRate / 60) * props.timeSlots.timeRange
                 appointmentType = "Voice Call Appointment"
                 appointmentIcon = "call" 
             }else if(props.navigation.getParam('appointmentType')=='chat')
             {
             
-                appointmentPrice = (props.navigation.getParam('doctor').chatHourlyRate / 60) * props.timeSlots.timeRange
+                appointmentPrice = props.navigation.getParam('doctor').chatHourlyRate //(props.navigation.getParam('doctor').chatHourlyRate / 60) * props.timeSlots.timeRange
                 appointmentType = "Chat Appointment"
                 appointmentIcon = "chatboxes"
             }
           
-
+        //    appointmentPrice = 0.333333333333333
+       
+            appointmentPrice = appointmentPrice.toFixed(2);
             setState({...state,timeSlots:props.timeSlots.timeSlots,appointmentPrice:appointmentPrice,appointmentIcon:appointmentIcon,appointmentType:appointmentType})
             props.clearTimeSlots()
 
         }else if(state.timeSlots.length == 0 && props.checkTimeSlots==false){
           
             props.loadingFlag()
-            const date = {date:props.navigation.getParam('date')}
+            const date = {date:props.navigation.getParam('date'),doctor_id:props.navigation.getParam('doctor').id}
             props.getTimeSlots(date)
           
         }
@@ -118,9 +121,11 @@ function SelectTimeSlot(props) {
 
     useEffect(() => {
     
+    
+
         if(props.msgBookAppointment)
         {
-            setState({...state,isloading:false})
+            setState({...state,isloading:false,cardModal:false})
             Toast.show({
                 text: "Error While Booking Appointment",
                 buttonText: "Okay",
@@ -131,6 +136,8 @@ function SelectTimeSlot(props) {
 
         if(props.bookAppointment)
         {
+
+     
             setState((state)=>({
                 ...state,
                 cardInfo:{
@@ -145,13 +152,16 @@ function SelectTimeSlot(props) {
                         "expiry": "",
                         "number": "",
                         "type": undefined
-                    },
-                    isloading:false,
-                    cardModal:false,
-                    bookingConfirmedModal:true
-                }
+                    }
+                },
+                isloading:false,
+                cardModal:false,
+                bookingConfirmedModal:true,
+                timeSlots: state.timeSlots.map(el => (el.time === state.selectedTimeSlot ? {...el,booked:1} : el)),
+
             }))
-            setState({...state,isloading:false,cardModal:false,bookingConfirmedModal:true})
+
+            props.clearAppointments()
         }
         
         props.clearAppointmentMessages()
@@ -171,15 +181,41 @@ function SelectTimeSlot(props) {
 
         state.timeSlots.map(slot => {
 
-            return (
+            let currentTime = moment().format('h:mm:s A')
+        
+            var beginningTime = moment(currentTime.toString(), 'h:mm:s A');
+
+            var endTime = moment(slot.time.toString(), 'h:mm:s A');
+
+        
+            if(endTime.isBefore(beginningTime))
+            {
+
+                return (
             
-                    <TouchableOpacity onPress={()=> selectSlot(slot.booked,slot.time)} key={uuid()} style={{borderColor:slot.booked==1?'#ff4444':'#5FB8B6',borderWidth:2,borderRadius:20,padding:4,marginTop:10,width:'24%',justifyContent:'center',alignItems:'center'}}>
+                    <TouchableOpacity disabled={true} onPress={()=> selectSlot(slot.booked,slot.time)} key={uuid()} style={{borderColor:'#cccccc',borderWidth:2,borderRadius:20,padding:4,marginTop:10,width:'24%',justifyContent:'center',alignItems:'center'}}>
                 
-                         <Text style={{color:slot.booked==1?'#ff4444':'#5FB8B6',fontFamily:'Montserrat-Bold'}}>{slot.time}</Text>
+                         <Text style={{color:'#cccccc',fontFamily:'Montserrat-Bold',fontSize:12}}>{slot.time}</Text>
                         
                     </TouchableOpacity>
              
-            )
+                )
+
+            }else{
+
+                return (
+            
+                        <TouchableOpacity onPress={()=> selectSlot(slot.booked,slot.time)} key={uuid()} style={{borderColor:slot.booked==1?'#ff4444':'#5FB8B6',borderWidth:2,borderRadius:20,padding:4,marginTop:10,width:'24%',justifyContent:'center',alignItems:'center'}}>
+                
+                           <Text style={{color:slot.booked==1?'#ff4444':'#5FB8B6',fontFamily:'Montserrat-Bold',fontSize:12}}>{slot.time}</Text>
+                        
+                        </TouchableOpacity>
+                
+                )
+
+
+            }
+        
         })
 
     ) :null
@@ -215,13 +251,13 @@ function SelectTimeSlot(props) {
         {
             setState({...state,isloading:true,cardValidations:false})
 
-            const apiKey = 'pk_test_0nNa4PTPVvf2PCA3Aqz1cYZ200krXucZiU'
+            const apiKey = props.user.stripe_pk //'pk_test_0nNa4PTPVvf2PCA3Aqz1cYZ200krXucZiU'
             const client = new Stripe(apiKey)
             
             // Create a Stripe token with new card infos
             const expiry = state.cardInfo.values.expiry.split('/')
 
-            const token = await client.createToken({
+               const token = await client.createToken({
                    number: state.cardInfo.values.number ,
                    exp_month: expiry[0], 
                    exp_year: expiry[1], 
@@ -234,6 +270,8 @@ function SelectTimeSlot(props) {
                 const appointment = {
                     token:token.id,
                     date:props.navigation.getParam('date').dateString,
+                    timestamp:props.navigation.getParam('date').timestamp,
+                    interval:props.navigation.getParam('doctor').slot,
                     time:state.selectedTimeSlot,
                     appointmentType:state.appointmentType,
                     appointmentPrice:state.appointmentPrice,
@@ -310,13 +348,13 @@ function SelectTimeSlot(props) {
               <Dialog.Container headerStyle={{margin:0}} contentStyle={{padding:0,borderRadius:20}} footerStyle={{height:130}}   visible={state.bookingConfirmedModal}>
                  
              
-                 <View style={{height:400,flexDirection:'column',justifyContent:'space-around'}}>
+                 <View style={{height:450,flexDirection:'column',justifyContent:'space-around'}}>
 
                         <View style={{flexDirection:'row',alignSelf:'flex-end',padding:10}}>
                            <Icon onPress={() => setState({...state,bookingConfirmedModal:false})} style={{fontSize:28,color:'#5FB8B6',}} type="Ionicons" name="close-circle"/>
                         </View>
 
-                        <View style={{backgroundColor:'#ffffff',height:275,flexDirection:'column',justifyContent:'space-around',alignItems:'center',paddingTop:20}}>
+                        <View style={{backgroundColor:'#ffffff',height:325,flexDirection:'column',justifyContent:'space-around',alignItems:'center',paddingTop:20}}>
                                  <H3 style={{fontFamily:'Montserrat-Bold',color:'#000000'}} >
                                     Booking Confirmed
                                  </H3>
@@ -332,6 +370,11 @@ function SelectTimeSlot(props) {
                                  <View style={{flexDirection:'row',justifyContent:'center',alignItems:'center'}}>
                                     <Icon style={{color:'#5FB8B6',fontSize:16,paddingRight:5}} type="Ionicons" name="logo-usd"/>
                                     <Text style={{fontFamily:'Montserrat-Bold',color:'#000000',fontSize:16}} >Payed Fee: <Text style={{color:'#5FB8B6',fontFamily:'Montserrat-Bold'}}>${state.appointmentPrice}</Text></Text> 
+                                 </View>
+
+                                 <View style={{flexDirection:'row',justifyContent:'center',alignItems:'center'}}>
+                                    <Icon style={{color:'#5FB8B6',fontSize:16,paddingRight:5}} type="Ionicons" name={state.appointmentIcon}/>
+                                    <Text style={{fontFamily:'Montserrat-Bold',color:'#000000',fontSize:16}} >{state.appointmentType}</Text> 
                                  </View>
 
                                  <View style={{flexDirection:'row',alignItems:'center',justifyContent:'center'}}>
@@ -429,10 +472,10 @@ function SelectTimeSlot(props) {
                             <Text style={styles.textStyle}>Available</Text>
                         </View>
 
-                        {/* <View style={{flexDirection:'row',alignItems:'center',justifyContent:'flex-end'}}>
-                            <View style={{borderBottomColor: '#0099CC',borderBottomWidth: 4,width:'10%',marginRight:5}}/>
-                            <Text style={styles.textStyle}>Selected</Text>
-                        </View> */}
+                        <View style={{flexDirection:'row',alignItems:'center',justifyContent:'flex-end'}}>
+                            <View style={{borderBottomColor: '#cccccc',borderBottomWidth: 4,width:'10%',marginRight:5}}/>
+                            <Text style={styles.textStyle}>Expired</Text>
+                        </View>
                     </View>
 
                     <View style={{flexDirection:'row',justifyContent:'space-around',paddingTop:5,flexWrap:'wrap',alignItems:'center'}} >
@@ -458,6 +501,7 @@ const mapStateToProps = (state) => {
         checkTimeSlots:state.appointment.checkTimeSlots,
         bookAppointment:state.appointment.bookAppointment,
         msgBookAppointment:state.appointment.msgBookAppointment,
+        user: state.auth.user,
     }
 }
 
@@ -470,7 +514,8 @@ const mapDispatchToProps = (dispatch) => {
         loadingFlag:() => dispatch(loadingFlag()),
         clearTimeSlots:() => dispatch(clearTimeSlots()),
         bookingAppointment:(appointment) => dispatch(bookingAppointment(appointment)),
-        clearAppointmentMessages:() => dispatch(clearAppointmentMessages())
+        clearAppointmentMessages:() => dispatch(clearAppointmentMessages()),
+        clearAppointments:() => dispatch(clearAppointments())
     }
 
 }

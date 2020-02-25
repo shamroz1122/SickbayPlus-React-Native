@@ -1,5 +1,5 @@
 import React, {useState,useEffect} from 'react'
-import { StyleSheet, Text, View,Image,KeyboardAvoidingView,Platform,SafeAreaView } from 'react-native';
+import { StyleSheet, Text, View,Image,KeyboardAvoidingView,Platform,ImageBackground } from 'react-native';
 import { Card, CardItem,Icon,Input,Item,Button,Content,Radio,Picker,Spinner } from 'native-base';
 import logo from '../../../assets/logo.png'
 import { SimpleAnimation } from 'react-native-simple-animations';
@@ -8,10 +8,13 @@ import Dialog from "react-native-dialog";
 import { connect } from 'react-redux'
 import CountryPicker from 'react-native-country-picker-modal'
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import watermark from '../../../assets/watermark.png'
+import AsyncStorage from '@react-native-community/async-storage';
+import momentTZ from 'moment-timezone';
+import RNPicker from "rn-modal-picker";
 
 function Signup(props){ 
-    const homePlace = { description: 'Home', geometry: { location: { lat: 48.8152937, lng: 2.4597668 } }};
-    const workPlace = { description: 'Work', geometry: { location: { lat: 48.8496818, lng: 2.2940881 } }};
+  //  console.log(momentTZ.tz.names())
 
     const [credentials,setCredentials] = useState({
             name:'',
@@ -22,25 +25,28 @@ function Signup(props){
             healthInsurance:'no',
             insurancePlan:0,
             password:'',
-            password_confirmation:''
+            password_confirmation:'',
+            timezone:''
     })
 
     const [state,setState] = useState({
-        next:1,
+        next:0,
         countryCode:'',
         passwordVisible:true,
         confirmPasswordVisible:true,
         isLoading:false,
         message:'',
         icon:'',
-        modal:false
+        modal:false,
+        placeHolderText: "Select Timezone",
+        selectTimeZone:''
     })
 
     useEffect( ()=>{
     
         if (props.isAuthenticated) {
             setState({...state,isLoading:false})
-            props.navigation.navigate('App'); // push user to dashboard when they login
+            //props.navigation.navigate('App'); // push user to dashboard when they login
         }
 
         if(props.signUpError)
@@ -118,14 +124,86 @@ function Signup(props){
                 
                 },
               }),
-        }
-    
+        },
+
+        searchBarContainerStyle: {
+            marginBottom: 10,
+            flexDirection: "row",
+            height: 40,
+            shadowOpacity: 1.0,
+            shadowRadius: 5,
+            shadowOffset: {
+              width: 1,
+              height: 1
+            },
+            backgroundColor: "rgba(255,255,255,1)",
+            shadowColor: "#d3d3d3",
+            borderRadius: 10,
+            elevation: 3,
+            marginLeft: 10,
+            marginRight: 10,
+            fontFamily:'Montserrat-Bold',
+          },
+        
+          selectLabelTextStyle: {
+            color: "#000",
+            textAlign: "left",
+            width: "99%",
+            padding: 15,
+            flexDirection: "row",
+            fontFamily:'Montserrat-Bold',
+          },
+          placeHolderTextStyle: {
+            color: "#000000",
+            padding: 15,
+            width:'99%',
+            flexDirection: "row",
+            fontFamily:'Montserrat-Bold',
+          },
+        //   dropDownImageStyle: {
+        //     marginLeft: 10,
+        //     width: 10,
+        //     height: 10,
+        //     alignSelf: "center"
+        //   },
+          listTextViewStyle: {
+            color: "#000",
+            marginVertical: 10,
+            flex: 0.9,
+            marginLeft: 20,
+            marginHorizontal: 10,
+            textAlign: "left",
+            fontFamily:'Montserrat-Bold',
+          },
+
+          pickerStyle: {
+          
+            fontFamily:'Montserrat-Bold',
+            color:'#000000',
+            flexDirection: "row",
+      
+            
+          }
+          
     });
 
-    const validateEmail = (email) =>{
-        var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-        return re.test(String(email).toLowerCase());
-    }
+    // const validateEmail = (email) =>{
+    //     var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    //     return re.test(String(email).toLowerCase());
+    // }
+
+      function validateEmail(elementValue){      
+        var emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+        return emailPattern.test(elementValue); 
+      }
+
+      function validatePhone(phoneValue){      
+        var phonePattern = /^[0-9+]*$/;
+        return phonePattern.test(phoneValue); 
+      }
+
+
+
     const allLetters = (inputtxt) => { 
         
       const letters = /^[A-Za-z ]+$/
@@ -148,9 +226,9 @@ function Signup(props){
         }else if(credentials.email=='' || !validateEmail(credentials.email))
         {
             setState({...state,modal:true,message:'Please Enter A Valid Email Address',icon:'close-circle'})
-        }else if(credentials.phoneNumber=='')
+        }else if(credentials.phoneNumber=='' || !validatePhone(credentials.phoneNumber) )
         {
-            setState({...state,modal:true,message:'Please Enter Phone Number',icon:'close-circle'})
+            setState({...state,modal:true,message:'Please Enter A Valid Phone Number',icon:'close-circle'})
         }else if(state.countryCode=='')
         {
             setState({...state,modal:true,message:'Please Select Country',icon:'close-circle'})
@@ -171,21 +249,24 @@ function Signup(props){
     }
 
     const onChangeInsurance = (insurance) => {
-
         setCredentials({...credentials,insurancePlan:insurance})
-
     }
+
+ 
 
     const handleChange = (name,value) => {
 
         setCredentials({...credentials,[name]:value})
     }
 
-    const onSignup = () => {
+    const onSignup = async() => {
 
         if(credentials.address=='')
         {
             setState({...state,modal:true,message:'Please Enter Address',icon:'close-circle'})
+        }else if(credentials.timezone=='')
+        {
+            setState({...state,modal:true,message:'Please Select Timezone',icon:'close-circle'})
         }else if(credentials.password=='')
         {
             setState({...state,modal:true,message:'Please Enter Password',icon:'close-circle'})
@@ -205,7 +286,11 @@ function Signup(props){
         
         }else
         {
+         
             setState({...state,isLoading:true})
+            let device_token =  await AsyncStorage.getItem('device_token');
+          //  console.log(device_token)
+            credentials.device_token = device_token
             props.signUp(credentials)
         }
 
@@ -217,10 +302,27 @@ function Signup(props){
     }
 
     const onSelectCountry = (Country) => {
-        setState({...state,country:Country,countryCode:Country.cca2})
 
-       // console.log(Country)
+        setCredentials({...credentials,country: JSON.stringify(Country)})
 
+        setState({...state,countryCode:Country.cca2})
+
+    }
+
+    var time_zones =  momentTZ.tz.names()
+  
+
+        time_zones = time_zones.map((str, index) =>{
+
+                var timezoneName = str.split('/')
+                var newTimezoneName =  timezoneName[1]+' '+'('+str+ ')'
+             return { name: newTimezoneName, id: index + 1, value:str }
+            
+        } );
+
+    const selectedValue = (index, item) => {
+        setCredentials({...credentials, timezone: item.value });
+        setState({...state, selectTimeZone: item.name });
     }
 
     return (
@@ -245,13 +347,14 @@ function Signup(props){
             
             </Dialog.Container>
 
-            <View style={{flex:1,backgroundColor:'#5FB8B6'}}>
+            <ImageBackground style={{width: '100%',flex:1,backgroundColor:'#5FB8B6'}} source={watermark} >
 
-            </View>
+            </ImageBackground>
+
             <View style={{flex:2,backgroundColor:'#ffffff',padding:20}}>
-            <Card style={{elevation:10,height:550,bottom:170,borderRadius: 25 }}>
+            <Card style={{elevation:10,height:590,bottom:200,borderRadius: 25 }}>
           
-              <CardItem style={{ borderRadius: 25,height:550 }}>
+              <CardItem style={{ borderRadius: 25,height:590 }}>
               <Content> 
                     <KeyboardAvoidingView  keyboardVerticalOffset={Platform.select({ios: 0, android:0})}  behavior={Platform.select({ android: 'padding', ios: 'padding' })} style={{flex:1,justifyContent:'center',alignItems:'center'}}>
                         {/* <View style={{flex:1,justifyContent:'center',alignItems:'center'}}> */}
@@ -276,7 +379,7 @@ function Signup(props){
 
                                         <Item rounded style={styles.email}>
                                             <Icon style={{color:"#000000"}} type="Ionicons" name="call"/>
-                                            <Input keyboardType='phone-pad'  keyboardType="phone-pad" style={styles.input} onChangeText={(text)=>handleChange('phoneNumber',text)} value={credentials.phoneNumber} placeholderTextColor="#000000" placeholder='Phone Number'/> 
+                                            <Input  keyboardType="phone-pad" style={styles.input} onChangeText={(text)=>handleChange('phoneNumber',text)} value={credentials.phoneNumber} placeholderTextColor="#000000" placeholder='Phone Number'/> 
                                         </Item>
 
                                             <Item rounded style={{ height:50, marginTop:20,paddingLeft:10,
@@ -384,7 +487,48 @@ function Signup(props){
                            />
                         
                                 </Item>
-                               
+
+                                <Item rounded picker style={{backgroundColor:'#BFFEFE',justifyContent:'center',marginTop:20}}>
+                                    <Icon style={{color:"#000000",marginLeft:50}} type="Ionicons" name="globe"/>
+                                    <RNPicker
+                                        dataSource={time_zones}
+                                        dummyDataSource={time_zones}
+                                        defaultValue={false}
+                                        pickerTitle={"Select Timezone"}
+                                        showSearchBar={true}
+                                        disablePicker={false}
+                                        changeAnimation={"none"}
+                                        searchBarPlaceHolder={"Search By City or Capital..."}
+                                        showPickerTitle={true}
+                                        searchBarContainerStyle={styles.searchBarContainerStyle}
+                                        pickerStyle={styles.pickerStyle}
+                                        pickerItemTextStyle={styles.listTextViewStyle}
+                                        selectedLabel={state.selectTimeZone}
+                                        placeHolderLabel={state.placeHolderText}
+                                        selectLabelTextStyle={styles.selectLabelTextStyle}
+                                        placeHolderTextStyle={styles.placeHolderTextStyle}
+                                        selectedValue={(index, item) => selectedValue(index, item)}
+                                    />
+                                 </Item> 
+                                {/* <Item rounded picker style={{backgroundColor:'#BFFEFE',justifyContent:'center',marginTop:20}}>
+                                 <Icon style={{color:"#000000"}} type="Ionicons" name="globe"/>
+                                        <Picker
+                                            mode="dropdown"
+                                            iosIcon={ <Icon style={{color:'#000000'}} name="arrow-down" />}
+                                            style={styles.pickerColor}
+                                            placeholder="Select Timezone"
+                                            placeholderStyle={{ color: "#000000",fontFamily:'Montserrat-Bold' }}
+                                            placeholderIconColor="#000000"
+                                            selectedValue={credentials.timezone}
+                                            onValueChange={(value) => onChangeTimezone(value)} 
+                                            textStyle={{color:'#000000',fontFamily:'Montserrat-Bold'}}
+                                        >
+                                            <Picker.Item label="Select Timezone" value={0} />
+                                            {Timezones}
+                                            
+                                        </Picker>
+                                </Item> */}
+
                                 <View style={{flexDirection:'row',justifyContent:'space-around',alignItems:'center',marginTop:20}}>
                                     <Text style={{fontSize:14,fontFamily:'Montserrat-Bold',color:'#000000'}}> Health Insurance </Text>
                                     <Radio
@@ -425,6 +569,7 @@ function Signup(props){
                                             
                                         </Picker>
                                 </Item>:null }
+
                               
 
                                 <Item rounded style={styles.password}>
